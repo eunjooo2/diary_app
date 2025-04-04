@@ -1,16 +1,23 @@
-# daily_app
+# 감정 일기 앱 (daily_app)
 
-A new Flutter project.
+Flutter로 만든 감정 일기 앱입니다.  
+매일매일의 감정을 캘린더에 기록하고, 시각화할 수 있는 앱입니다.. 📅📝
 
-## Getting Started
+## 기능
 
-This project is a starting point for a Flutter application.
+- 감정 일기 리스트 보기
+- 캘린더에서 일기 확인/추가
+- 설정 화면
 
-A few resources to get you started if this is your first Flutter project:
+## 사용 기술
+- Flutter
+- Dart
+- TableCalendar
+- FontAwesome Icons
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 시작 방법
+```bash
+git clone https://github.com/eunjooo2/diary_app.git
+cd diary_app
+flutter pub get
+flutter run
