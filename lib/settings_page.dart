@@ -19,27 +19,24 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           children: [
             const SizedBox(height: 60),
-            const FaIcon(FontAwesomeIcons.gear, size: 28), // ✅ 설정 아이콘 교체
-            const SizedBox(height: 8),
+            const FaIcon(FontAwesomeIcons.gear, size: 28),
+            const SizedBox(height: 15),
             const Divider(thickness: 1),
-
             _buildSettingItem(
               icon: FontAwesomeIcons.lock, // 🔒
-              text: '화면 암호 설정',
+              text: '암호 설정',
               onTap: () {
                 // TODO: 암호 설정 페이지로 이동
               },
             ),
             _buildSettingItem(
               icon: FontAwesomeIcons.rotateRight, // 🔄
-              text: '화면 암호 변경',
+              text: '암호 변경',
               onTap: () {
                 // TODO: 암호 변경 페이지로 이동
               },
             ),
-
             const Divider(thickness: 1),
-
             _buildSwitchItem(
               icon: FontAwesomeIcons.bell, // 🔔
               text: '일기 알림',
@@ -57,7 +54,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 // TODO: 앱 정보 다이얼로그
               },
             ),
-
             const SizedBox(height: 40),
           ],
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'pin_code_page.dart';
+import 'pin_code_page.dart';
 import 'diary_list_page.dart';
 
 void main() {
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const DiaryListPage(), // 시작페이지
+      home: DiaryListPage(), // 시작페이지
     );
   }
 }

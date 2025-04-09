@@ -4,12 +4,17 @@ description: 감정 일기 앱
 environment:
   sdk: ">=3.0.0 <4.0.0"
 
+flutter:
+  assets:
+    - assets/emotions/
+    - assets/weather/
+
 dependencies:
   flutter:
     sdk: flutter
   font_awesome_flutter: ^10.5.0
   table_calendar: ^3.0.9
-  intl: ^0.20.2 # ✅ 최신 버전만 남김
+  intl: ^0.20.2
   flutter_local_notifications: ^19.0.0
   timezone: ^0.10.0
   shared_preferences: ^2.2.1
