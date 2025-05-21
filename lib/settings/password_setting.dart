@@ -1,50 +1,59 @@
 import 'package:flutter/material.dart';
-import 'diary_list_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class PinCodePage extends StatefulWidget {
-  const PinCodePage({super.key});
+class PasswordSettingPage extends StatefulWidget {
+  const PasswordSettingPage({super.key});
 
   @override
-  State<PinCodePage> createState() => _PinCodePageState();
+  State<PasswordSettingPage> createState() => _PasswordSettingPageState();
 }
 
-class _PinCodePageState extends State<PinCodePage> {
-  final List<String> _pin = [];
-  final String _correctPin = '1234';
+class _PasswordSettingPageState extends State<PasswordSettingPage> {
+  List<String> _pin = [];
+  String? _tempPassword;
+  bool _isConfirming = false;
 
   void _addDigit(String digit) {
-    if (_pin.length < 4) {
-      setState(() => _pin.add(digit));
-      if (_pin.length == 4) _verifyPin();
+    if (_pin.length >= 4) return;
+    setState(() => _pin.add(digit));
+
+    if (_pin.length == 4) {
+      final entered = _pin.join();
+
+      if (!_isConfirming) {
+        _tempPassword = entered;
+        _resetPin();
+        setState(() => _isConfirming = true);
+      } else {
+        if (_tempPassword == entered) {
+          _savePassword(entered);
+        } else {
+          _showToast("암호가 일치하지 않습니다.");
+          _resetPin();
+          setState(() => _isConfirming = false);
+        }
+      }
     }
   }
 
-  void _verifyPin() {
-    final enteredPin = _pin.join('');
-    if (enteredPin == _correctPin) {
-      Future.delayed(const Duration(milliseconds: 200), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DiaryListPage()),
-        );
+  void _resetPin() => setState(() => _pin.clear());
+
+  void _deleteDigit() => setState(() {
+        if (_pin.isNotEmpty) _pin.removeLast();
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('암호가 틀렸습니다.')),
-      );
-      _resetPin();
-    }
+
+  void _savePassword(String pin) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pin_code', pin);
+    _showToast("암호가 설정되었습니다.");
+    if (mounted) Navigator.pop(context);
   }
 
-  void _deleteDigit() {
-    if (_pin.isNotEmpty) {
-      setState(() => _pin.removeLast());
-    }
+  void _showToast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  void _resetPin() {
-    setState(() => _pin.clear());
-  }
+  String get _guideText => _isConfirming ? '한 번 더 입력하시오' : '설정할 암호 4자리를 입력하시오';
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +63,9 @@ class _PinCodePageState extends State<PinCodePage> {
         child: Column(
           children: [
             const SizedBox(height: 200),
-            const Text(
-              '암호를 입력해 주세요.',
-              style: TextStyle(color: Colors.black38, fontSize: 16),
+            Text(
+              _guideText,
+              style: const TextStyle(color: Colors.black38, fontSize: 16),
             ),
             const SizedBox(height: 50),
             Row(
@@ -93,7 +102,7 @@ class _PinCodePageState extends State<PinCodePage> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -101,15 +110,14 @@ class _PinCodePageState extends State<PinCodePage> {
   }
 
   Widget _buildKeypadRow(List<String> labels) {
+    final isDigit = RegExp(r'^\d$');
+
     return Expanded(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: labels.map((label) {
-          final isDigit = RegExp(r'^\d$').hasMatch(label);
-
           return Expanded(
             child: Material(
-              //  Material로 감싸야 InkWell이 효과 보임
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
@@ -126,7 +134,7 @@ class _PinCodePageState extends State<PinCodePage> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isDigit
+                      color: isDigit.hasMatch(label)
                           ? const Color.fromARGB(255, 237, 247, 255)
                           : const Color.fromARGB(0, 255, 225, 225),
                       width: 0.2,

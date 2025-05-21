@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
+import '../models/diary_entry.dart';
 
 class WritePage extends StatefulWidget {
+  final DateTime selectedDate; // 날짜
+  final DiaryEntry? existingEntry; // 수정용
+
+  const WritePage({
+    super.key,
+    required this.selectedDate,
+    this.existingEntry, //  선택적 파라미터 (null 허용)
+  });
+
   @override
   State<WritePage> createState() => _WritePageState();
 }
 
 class _WritePageState extends State<WritePage> {
   final TextEditingController _controller = TextEditingController();
+
   bool _isWriting = false;
 
   // 기본 선택된 감정/날씨
@@ -19,8 +31,8 @@ class _WritePageState extends State<WritePage> {
     'happy': 'assets/emotions/happy.png',
     'bad': 'assets/emotions/bad.png',
     'angry': 'assets/emotions/angry.png',
-    'depressed': 'assets/emotions/depressed.png',
-    'smile': 'assets/emotions/smile.png',
+    'neutral': 'assets/emotions/neutral.png',
+    'sad': 'assets/emotions/sad.png',
   };
 
   final Map<String, String> weatherImagePaths = {
@@ -33,6 +45,14 @@ class _WritePageState extends State<WritePage> {
   @override
   void initState() {
     super.initState();
+
+    // 수정 모드일 경우 초기값 채우기
+    if (widget.existingEntry != null) {
+      selectedEmotion = widget.existingEntry!.emotion;
+      selectedWeather = widget.existingEntry!.weather;
+      _controller.text = widget.existingEntry!.text ?? '';
+    }
+
     _controller.addListener(() {
       setState(() {
         _isWriting = _controller.text.isNotEmpty;
@@ -97,7 +117,7 @@ class _WritePageState extends State<WritePage> {
   @override
   Widget build(BuildContext context) {
     final String formattedDate =
-        DateFormat('yyyy년 M월 d일 EEEE', 'ko').format(DateTime.now());
+        DateFormat('yyyy년 M월 d일 EEEE', 'ko').format(widget.selectedDate);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDE7),
@@ -106,11 +126,12 @@ class _WritePageState extends State<WritePage> {
         elevation: 0,
         leading: IconButton(
           icon: const FaIcon(
-            FontAwesomeIcons.chevronLeft, size: 16,
-            color: Colors.black, // 아이콘 색상 설정
+            FontAwesomeIcons.chevronLeft,
+            size: 16,
+            color: Colors.black,
           ),
           onPressed: () {
-            Navigator.pop(context); // 뒤로가기 동작
+            Navigator.pop(context);
           },
         ),
         centerTitle: true,
@@ -120,12 +141,25 @@ class _WritePageState extends State<WritePage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              print("일기 저장됨: \${_controller.text}");
-              print("선택한 감정: \$selectedEmotion");
-              print("선택한 날씨: \$selectedWeather");
+            onPressed: () async {
+              final date = widget.selectedDate; // 선택 날짜 사용
+              final formattedKey = DateFormat('yyyy-MM-dd').format(date);
 
-              // 감정, 날씨, 텍스트 모두 넘김
+              final entry = DiaryEntry(
+                date: date,
+                emotion: selectedEmotion,
+                weather: selectedWeather,
+                text: _controller.text,
+              );
+
+              final box = Hive.box<DiaryEntry>('diaryEntries');
+              await box.put(formattedKey, entry);
+
+              print(" Hive 저장됨: $formattedKey");
+              print(" 감정: ${entry.emotion}");
+              print(" 날씨: ${entry.weather}");
+              print(" 텍스트: ${entry.text}");
+
               Navigator.pop(context, {
                 'emotion': selectedEmotion,
                 'weather': selectedWeather,
@@ -147,13 +181,12 @@ class _WritePageState extends State<WritePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 감정 선택 버튼
                 GestureDetector(
                   onTap: _selectEmotion,
                   child: Container(
                     width: 64,
                     height: 64,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
@@ -166,7 +199,6 @@ class _WritePageState extends State<WritePage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // 날씨 선택 버튼
                 GestureDetector(
                   onTap: _selectWeather,
                   child: Container(
@@ -202,6 +234,7 @@ class _WritePageState extends State<WritePage> {
                     hintText: '오늘은 어떤 하루였나요?\n간단하게 기록해 보아요!',
                     hintStyle: TextStyle(
                       fontSize: 16,
+                      // fontFamily: 'NotoSansKR',
                       color: Colors.grey.shade500,
                     ),
                   ),

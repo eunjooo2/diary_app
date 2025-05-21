@@ -1,8 +1,15 @@
+// # 일기 리스트 페이지
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
+import '../models/diary_entry.dart';
 import 'calendar_page.dart';
-import 'settings_page.dart';
+import 'settings/settings_page.dart';
 import 'write_page.dart';
+import 'emotion_bar_page.dart';
+import 'emotion_line_page.dart';
 
 class DiaryListPage extends StatefulWidget {
   const DiaryListPage({super.key});
@@ -15,33 +22,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
   int _selectedIndex = 0;
   TextEditingController _searchController = TextEditingController();
   String _searchKeyword = '';
-
-  final List<Map<String, String>> diaryEntries = const [
-    {
-      'emotionImg': 'happy.png',
-      'weatherImg': 'sunny.png',
-      'date': '2025년 03월 27일 목요일',
-      'text': '오전 수업 끝나고 교수님께 상담을 받으러 갔다. 고민됐던 게 해결돼서 후련했다. 열심히 해야지',
-    },
-    {
-      'emotionImg': 'bad.png',
-      'weatherImg': 'cloud.png',
-      'date': '2025년 03월 26일 수요일',
-      'text': '산학 프로젝트 때문에 저녁에 다시 학교에 모여 회의를 했다. 집에 가는데 날씨가 너무 추웠다.',
-    },
-    {
-      'emotionImg': 'depressed.png',
-      'weatherImg': 'rain.png',
-      'date': '2025년 03월 25일 화요일',
-      'text': '오늘따라 유난히 피곤한 하루였다. 곧 3월이 끝나가네.. 시간이 너무 빠른 것 같다.',
-    },
-    {
-      'emotionImg': 'smile.png',
-      'weatherImg': 'snow.png',
-      'date': '2025년 03월 18일 화요일',
-      'text': '3월인데 눈이 왔다. 3월에는 눈 보다니 신기했다. 너무 추웠지만 약간 예뻤다.',
-    },
-  ];
+  List<bool> _expandedStates = [];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -50,9 +31,16 @@ class _DiaryListPageState extends State<DiaryListPage> {
   }
 
   Widget _buildDiaryListView() {
-    final filteredEntries = diaryEntries.where((entry) {
-      return entry['text']!.contains(_searchKeyword);
+    final box = Hive.box<DiaryEntry>('diaryEntries');
+    final List<DiaryEntry> entries = box.values.toList().reversed.toList();
+
+    final filteredEntries = entries.where((entry) {
+      return entry.text?.contains(_searchKeyword) ?? false;
     }).toList();
+
+    if (_expandedStates.length != filteredEntries.length) {
+      _expandedStates = List.generate(filteredEntries.length, (_) => false);
+    }
 
     return SafeArea(
       child: Column(
@@ -84,18 +72,19 @@ class _DiaryListPageState extends State<DiaryListPage> {
                     },
                     decoration: InputDecoration(
                       hintText: '검색어를 입력하세요.',
-                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      hintStyle: TextStyle(color: Colors.grey[500]),
                       filled: true,
-                      fillColor: Color(0xFFFFFFFF),
+                      fillColor: const Color.fromARGB(255, 255, 236, 253),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: Color.fromARGB(255, 118, 97, 157)),
+                        borderRadius: BorderRadius.circular(18),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 162, 9, 192),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Color.fromARGB(255, 211, 177, 227),
+                        borderRadius: BorderRadius.circular(18),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 236, 190, 255),
                           width: 2,
                         ),
                       ),
@@ -118,10 +107,12 @@ class _DiaryListPageState extends State<DiaryListPage> {
               onTap: () async {
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => WritePage()),
+                  MaterialPageRoute(
+                    builder: (_) => WritePage(selectedDate: DateTime.now()),
+                  ),
                 );
-                if (result != null && result is String) {
-                  print("작성된 감정일기: $result");
+                if (result != null) {
+                  setState(() {});
                 }
               },
               child: Container(
@@ -130,7 +121,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Colors.grey),
+                  border: Border.all(
+                      color: const Color.fromARGB(255, 211, 211, 211)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -143,7 +135,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
                     ),
                     SizedBox(height: 15),
                     FaIcon(FontAwesomeIcons.plus,
-                        size: 18, color: Colors.black38),
+                        size: 18, color: Color.fromARGB(95, 86, 79, 79)),
                   ],
                 ),
               ),
@@ -156,16 +148,13 @@ class _DiaryListPageState extends State<DiaryListPage> {
               itemCount: filteredEntries.length,
               itemBuilder: (context, index) {
                 final entry = filteredEntries[index];
-
-                final emotionPath = entry['emotionImg'] != null
-                    ? 'assets/emotions/${entry['emotionImg']}'
-                    : 'assets/emotions/default.png';
-                final weatherPath = entry['weatherImg'] != null
-                    ? 'assets/weather/${entry['weatherImg']}'
-                    : 'assets/weather/default.png';
+                final key = box.keyAt(box.length - 1 - index);
+                final emotionPath = 'assets/emotions/${entry.emotion}.png';
+                final weatherPath = 'assets/weather/${entry.weather}.png';
+                final isExpanded = _expandedStates[index];
 
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -181,50 +170,141 @@ class _DiaryListPageState extends State<DiaryListPage> {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: Colors.yellow[100],
                               shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey[300]!),
                             ),
-                            child: Center(
-                              child: Image.asset(emotionPath,
-                                  width: 18, height: 18),
+                            child: ClipOval(
+                              child: Image.asset(
+                                emotionPath,
+                                width: 30,
+                                height: 20,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Container(
-                            width: 36,
-                            height: 36,
+                            width: 25,
+                            height: 25,
                             decoration: BoxDecoration(
-                              color: Colors.blue[100],
-                              shape: BoxShape.circle,
+                              color: Colors.blue[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
                             ),
-                            child: Center(
-                              child: Image.asset(weatherPath,
-                                  width: 18, height: 18),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: Image.asset(
+                                weatherPath,
+                                width: 28,
+                                height: 28,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry['date']!,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                        child: Transform.translate(
+                          offset: const Offset(0, -12), // 위로 올리기
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      DateFormat('yyyy년 MM월 dd일 EEEE', 'ko_KR')
+                                          .format(entry.date),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                  PopupMenuButton<String>(
+                                    // ... 마크
+                                    padding: EdgeInsets.only(left: 11),
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.ellipsis,
+                                      size: 16,
+                                      color: Colors.grey[500],
+                                    ),
+                                    onSelected: (value) async {
+                                      if (value == 'edit') {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => WritePage(
+                                              selectedDate: entry.date,
+                                              existingEntry: entry,
+                                            ),
+                                          ),
+                                        );
+                                        if (result != null) setState(() {});
+                                      } else if (value == 'delete') {
+                                        await box.delete(key);
+                                        setState(() {});
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                          value: 'edit', child: Text('수정')),
+                                      const PopupMenuItem(
+                                          value: 'delete', child: Text('삭제')),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              entry['text']!,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.black87,
+                              Text(
+                                // 일기 텍스트
+                                isExpanded || (entry.text?.length ?? 0) <= 70
+                                    ? entry.text ?? ''
+                                    : '${entry.text!.substring(0, 70)}...',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                  height: 1.4,
+                                ),
                               ),
-                            ),
-                          ],
+                              if ((entry.text?.length ?? 0) > 70)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 8), // 위쪽 간격만 약간 줘도 충분
+                                  child: TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size(0, 0),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _expandedStates[index] =
+                                            !_expandedStates[index];
+                                      });
+                                    },
+                                    icon: FaIcon(
+                                      isExpanded
+                                          ? FontAwesomeIcons.chevronUp
+                                          : FontAwesomeIcons.chevronDown,
+                                      size: 12,
+                                      color: const Color.fromARGB(
+                                          255, 184, 149, 199),
+                                    ),
+                                    label: Text(
+                                      isExpanded ? '접기' : '더보기',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color:
+                                            Color.fromARGB(255, 184, 149, 199),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       )
                     ],
@@ -232,7 +312,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
                 );
               },
             ),
-          ),
+          )
         ],
       ),
     );
@@ -241,11 +321,11 @@ class _DiaryListPageState extends State<DiaryListPage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      _buildDiaryListView(),
-      const CalendarPage(),
-      const Placeholder(),
-      const Placeholder(),
-      const SettingsPage(),
+      _buildDiaryListView(), // 리스트
+      const CalendarPage(), // 캘린더
+      const EmotionLinePage(), // 라인그래프
+      const EmotionBarPage(), // 바그래프
+      const SettingsPage(), // 설정창
     ];
 
     return Scaffold(
@@ -268,12 +348,12 @@ class _DiaryListPageState extends State<DiaryListPage> {
             label: '캘린더',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.faceSmile),
-            label: '그래프',
+            icon: FaIcon(FontAwesomeIcons.chartLine),
+            label: '분석',
           ),
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.chartSimple),
-            label: '분석',
+            label: '그래프',
           ),
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.gear),

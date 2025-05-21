@@ -3,6 +3,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
+import '../models/diary_entry.dart';
 import 'write_page.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -16,14 +18,12 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  final Map<DateTime, Map<String, String>> _dailyRecords = {};
-
   final Map<String, String> emotionImagePaths = {
     'happy': 'assets/emotions/happy.png',
     'angry': 'assets/emotions/angry.png',
     'bad': 'assets/emotions/bad.png',
-    'depressed': 'assets/emotions/depressed.png',
-    'smile': 'assets/emotions/smile.png',
+    'neutral': 'assets/emotions/neutral.png',
+    'sad': 'assets/emotions/sad.png',
   };
 
   final Map<String, String> weatherImagePaths = {
@@ -36,6 +36,13 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _stripTime(DateTime date) =>
       DateTime(date.year, date.month, date.day);
 
+  String _formatDateKey(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
+
+  DiaryEntry? _getDiaryEntryByDate(DateTime date) {
+    final box = Hive.box<DiaryEntry>('diaryEntries');
+    return box.get(_formatDateKey(date));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +53,8 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final selected = _selectedDay != null ? _stripTime(_selectedDay!) : null;
-    final selectedRecord = selected != null ? _dailyRecords[selected] : null;
+    final DiaryEntry? selectedRecord =
+        selected != null ? _getDiaryEntryByDate(selected) : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDEB),
@@ -55,10 +63,9 @@ class _CalendarPageState extends State<CalendarPage> {
           padding: const EdgeInsets.only(bottom: 20),
           child: Column(
             children: [
-              const SizedBox(height: 10),
-              const Center(
-                  child: FaIcon(FontAwesomeIcons.calendar, size: 26)), //달력 이미지
-              const SizedBox(height: 8),
+              const SizedBox(height: 9),
+              const Center(child: FaIcon(FontAwesomeIcons.calendar, size: 26)),
+              const SizedBox(height: 3),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -74,28 +81,23 @@ class _CalendarPageState extends State<CalendarPage> {
                       });
                     },
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 85), // 왼쪽과 오른쪽 간격 늘림
                   Text(
                     '${_focusedDay.year}년 ${_focusedDay.month}월',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 85), // 오른쪽 간격 추가
                   IconButton(
                     icon: const FaIcon(FontAwesomeIcons.chevronRight, size: 16),
                     onPressed: () {
-                      final nextMonth = DateTime(
-                        _focusedDay.year,
-                        _focusedDay.month + 1,
-                      );
-                      if (!nextMonth.isAfter(DateTime.now())) {
-                        setState(() {
-                          _focusedDay = nextMonth;
-                          _selectedDay = null;
-                        });
-                      }
+                      setState(() {
+                        _focusedDay = DateTime(
+                          _focusedDay.year,
+                          _focusedDay.month + 1,
+                        );
+                        _selectedDay = null;
+                      });
                     },
                   ),
                 ],
@@ -115,7 +117,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 ),
               const SizedBox(height: 20),
               SizedBox(
-                height: 330, // 캘린더와 감정등록 카드 사이 간격
+                height: 330,
                 child: TableCalendar(
                   firstDay: DateTime(2020),
                   lastDay: DateTime.now(),
@@ -156,37 +158,31 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   calendarBuilders: CalendarBuilders(
                     defaultBuilder: (context, day, focusedDay) {
-                      final simpleDay = _stripTime(day);
-                      final record = _dailyRecords[simpleDay];
-
-                      print(
-                          '📅 ${simpleDay.toIso8601String()} → 감정: ${record?['emotion']}');
-
+                      final record = _getDiaryEntryByDate(day);
                       if (record != null &&
-                          emotionImagePaths.containsKey(record['emotion'])) {
+                          emotionImagePaths.containsKey(record.emotion)) {
                         return Center(
                           child: Container(
-                            width: 36,
-                            height: 36,
+                            // 캘린더에 띄워질 감정 이모지
+                            width: 40,
+                            height: 40,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                             ),
                             child: ClipOval(
                               child: Image.asset(
-                                emotionImagePaths[record['emotion']]!,
+                                emotionImagePaths[record.emotion]!,
                                 fit: BoxFit.cover,
                               ),
                             ),
                           ),
                         );
                       }
-
                       return null;
                     },
                   ),
                 ),
               ),
-              const SizedBox(height: 0.5),
               if (selected != null && selectedRecord != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -195,13 +191,57 @@ class _CalendarPageState extends State<CalendarPage> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          DateFormat('yyyy년 M월 d일 EEEE', 'ko_KR')
-                              .format(selected),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              DateFormat('yyyy년 M월 d일 EEEE', 'ko_KR')
+                                  .format(selected),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: const FaIcon(
+                                FontAwesomeIcons.ellipsisVertical, // ←... 아이콘
+                                size: 19,
+                                color: Colors.grey,
+                              ),
+                              offset: const Offset(0, 30), //  메뉴 위치를 아이콘 아래로
+                              padding: EdgeInsets.zero, // 여백 최소화
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              onSelected: (value) async {
+                                final box =
+                                    Hive.box<DiaryEntry>('diaryEntries');
+                                final formattedKey =
+                                    DateFormat('yyyy-MM-dd').format(selected);
+                                if (value == 'edit') {
+                                  final entry = box.get(formattedKey);
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => WritePage(
+                                        selectedDate: selected,
+                                        existingEntry: entry,
+                                      ),
+                                    ),
+                                  );
+                                  if (result != null) setState(() {});
+                                } else if (value == 'delete') {
+                                  await box.delete(formattedKey);
+                                  setState(() {});
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(value: 'edit', child: Text('수정')),
+                                PopupMenuItem(
+                                    value: 'delete', child: Text('삭제')),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                       Container(
@@ -218,27 +258,36 @@ class _CalendarPageState extends State<CalendarPage> {
                             Column(
                               children: [
                                 if (emotionImagePaths
-                                    .containsKey(selectedRecord['emotion']))
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.asset(
-                                      emotionImagePaths[
-                                          selectedRecord['emotion']]!,
-                                      width: 51,
-                                      height: 51,
-                                      fit: BoxFit.cover,
+                                    .containsKey(selectedRecord.emotion))
+                                  Container(
+                                    width: 45,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: Image.asset(
+                                        emotionImagePaths[
+                                            selectedRecord.emotion]!,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
-                                const SizedBox(height: 28),
+                                const SizedBox(height: 10),
                                 if (weatherImagePaths
-                                    .containsKey(selectedRecord['weather']))
+                                    .containsKey(selectedRecord.weather))
                                   ClipRRect(
+                                    // 감정박스에에 날씨이모지
                                     borderRadius: BorderRadius.circular(1),
                                     child: Image.asset(
                                       weatherImagePaths[
-                                          selectedRecord['weather']]!,
-                                      width: 30,
-                                      height: 30,
+                                          selectedRecord.weather]!,
+                                      width: 25,
+                                      height: 25,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -247,7 +296,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(
-                                selectedRecord['text'] ?? '작성된 일기 없음',
+                                selectedRecord.text ?? '작성된 일기 없음',
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ),
@@ -300,17 +349,12 @@ class _CalendarPageState extends State<CalendarPage> {
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => WritePage(),
+                                    builder: (_) =>
+                                        WritePage(selectedDate: _selectedDay!),
                                   ),
                                 );
-
-                                if (result != null &&
-                                    result is Map<String, String> &&
-                                    _selectedDay != null) {
-                                  setState(() {
-                                    final dateKey = _stripTime(_selectedDay!);
-                                    _dailyRecords[dateKey] = result;
-                                  });
+                                if (result != null) {
+                                  setState(() {});
                                 }
                               },
                             ),
