@@ -23,7 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           children: [
             const SizedBox(height: 60),
-            const FaIcon(FontAwesomeIcons.gear, size: 28),
+            const FaIcon(FontAwesomeIcons.gear, size: 25),
             const SizedBox(height: 15),
             const Divider(thickness: 1),
             _buildSettingItem(
