@@ -66,10 +66,10 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
   String _getSolutionImage(Map<String, int> counts) {
     final total = counts.values.fold(0, (a, b) => a + b);
     final positive = counts['happy'] ?? 0;
-    final negative = (counts['neutral'] ?? 0) + (counts['sad'] ?? 0);
+    final negative = (counts['bad'] ?? 0) + (counts['angry'] ?? 0);
 
     if (total == 0) return 'assets/solution/solution_sunny.png';
-    if (negative > total * 0.5) return 'assets/solution/solution_moon.png';
+    if (negative > total * 0.5) return 'assets/solution/solution_cloud.png';
     if (positive > total * 0.5) return 'assets/solution/solution_sunny.png';
     return 'assets/solution/solution_rainbow.png';
   }
