@@ -15,7 +15,7 @@ class EmotionBarPage extends StatefulWidget {
 class _EmotionStatsPageState extends State<EmotionBarPage> {
   DateTime _focusedMonth = DateTime.now();
 
-  final List<String> emotionKeys = ['happy', 'neutral', 'sad', 'bad', 'angry'];
+  final List<String> emotionKeys = ['angry', 'bad', 'sad', 'happy', 'neutral'];
 
   final Map<String, String> emotionImagePaths = {
     'sad': 'assets/emotions/sad.png',

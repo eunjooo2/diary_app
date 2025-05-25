@@ -1,50 +1,57 @@
-/*
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:hive/hive.dart';
 
-/// 알림 플러그인 전역 인스턴스
-final FlutterLocalNotificationsPlugin notificationsPlugin =
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-/// 알림 초기화 함수 (main.dart에서 호출해야 함)
 Future<void> initializeNotifications() async {
   tz.initializeTimeZones();
-  tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 
-  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-  const initSettings = InitializationSettings(android: androidSettings);
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  await notificationsPlugin.initialize(initSettings);
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
-/// 매일 밤 9시에 알림 예약
-Future<void> showDailyNotification() async {
-  final now = tz.TZDateTime.now(tz.local);
-  final scheduled =
-      tz.TZDateTime(tz.local, now.year, now.month, now.day, 21, 0);
-
-  await notificationsPlugin.zonedSchedule(
-    0,
-    '오늘 하루는 어땠나요?',
-    '감정을 기록해보세요 📝',
-    scheduled.isBefore(now)
-        ? scheduled.add(const Duration(days: 1))
-        : scheduled,
+/// 매일 특정 시간에 알림 예약
+Future<void> scheduleDailyAlarm(int hour, int minute) async {
+  await flutterLocalNotificationsPlugin.zonedSchedule(
+    0, // 알림 ID
+    '오늘 하루 감정, 기록했나요?',
+    '하루 감정을 짧게라도 남겨보세요.',
+    _nextInstanceOfTime(hour, minute),
     const NotificationDetails(
       android: AndroidNotificationDetails(
-        'daily_channel_id',
-        '감정일기 알림',
-        channelDescription: '매일 감정을 기록할 수 있도록 알려줍니다.',
+        'daily_alarm_channel',
+        '일일 감정 알림',
         importance: Importance.max,
         priority: Priority.high,
       ),
     ),
     androidAllowWhileIdle: true,
-    matchDateTimeComponents: DateTimeComponents.time,
     uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.wallClockTime,
+        UILocalNotificationDateInterpretation.absoluteTime,
+    matchDateTimeComponents: DateTimeComponents.time,
   );
 }
 
-*/
+/// 알림 취소
+Future<void> cancelAlarm() async {
+  await flutterLocalNotificationsPlugin.cancel(0);
+}
+
+/// 다음 알림 시간 계산
+tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
+  final now = tz.TZDateTime.now(tz.local);
+  final scheduled =
+      tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+  return scheduled.isBefore(now)
+      ? scheduled.add(const Duration(days: 1))
+      : scheduled;
+}
