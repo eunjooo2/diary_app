@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 class PasswordSettingPage extends StatefulWidget {
   const PasswordSettingPage({super.key});
@@ -43,8 +43,8 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
       });
 
   void _savePassword(String pin) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pin_code', pin);
+    final box = await Hive.openBox('settings');
+    await box.put('pin_code', pin);
     _showToast("암호가 설정되었습니다.");
     if (mounted) Navigator.pop(context);
   }

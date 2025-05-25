@@ -157,7 +157,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (picked != null) {
       setState(() => selectedTime = picked);
 
-      // 알림 스케줄 코드 제거됨
+      // 알림 스케줄 코드 제거
       // final now = DateTime.now();
       // final scheduledTime = tz.TZDateTime(
       //   tz.local,

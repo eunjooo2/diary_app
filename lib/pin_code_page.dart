@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'diary_list_page.dart';
 
 class PinCodePage extends StatefulWidget {
@@ -10,7 +11,20 @@ class PinCodePage extends StatefulWidget {
 
 class _PinCodePageState extends State<PinCodePage> {
   final List<String> _pin = [];
-  final String _correctPin = '1234';
+  String? _savedPin;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPin();
+  }
+
+  Future<void> _loadSavedPin() async {
+    final box = await Hive.openBox('settings');
+    setState(() {
+      _savedPin = box.get('pin_code');
+    });
+  }
 
   void _addDigit(String digit) {
     if (_pin.length < 4) {
@@ -21,7 +35,7 @@ class _PinCodePageState extends State<PinCodePage> {
 
   void _verifyPin() {
     final enteredPin = _pin.join('');
-    if (enteredPin == _correctPin) {
+    if (enteredPin == _savedPin) {
       Future.delayed(const Duration(milliseconds: 200), () {
         Navigator.pushReplacement(
           context,
@@ -48,6 +62,12 @@ class _PinCodePageState extends State<PinCodePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_savedPin == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -109,7 +129,6 @@ class _PinCodePageState extends State<PinCodePage> {
 
           return Expanded(
             child: Material(
-              //  Material로 감싸야 InkWell이 효과 보임
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {

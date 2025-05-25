@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 class PasswordChangePage extends StatefulWidget {
   const PasswordChangePage({super.key});
@@ -21,9 +21,9 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
   }
 
   Future<void> _loadSavedPassword() async {
-    final prefs = await SharedPreferences.getInstance();
+    final box = await Hive.openBox('settings');
     setState(() {
-      _savedPassword = prefs.getString('pin_code');
+      _savedPassword = box.get('pin_code');
     });
   }
 
@@ -71,8 +71,8 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
       });
 
   void _saveNewPassword(String pin) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pin_code', pin);
+    final box = await Hive.openBox('settings');
+    await box.put('pin_code', pin);
     _showToast("암호가 변경되었습니다.");
     if (mounted) Navigator.pop(context);
   }
