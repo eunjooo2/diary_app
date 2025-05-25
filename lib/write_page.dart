@@ -29,10 +29,10 @@ class _WritePageState extends State<WritePage> {
 
   final Map<String, String> emotionImagePaths = {
     'happy': 'assets/emotions/happy.png',
-    'bad': 'assets/emotions/bad.png',
-    'angry': 'assets/emotions/angry.png',
     'neutral': 'assets/emotions/neutral.png',
     'sad': 'assets/emotions/sad.png',
+    'bad': 'assets/emotions/bad.png',
+    'angry': 'assets/emotions/angry.png',
   };
 
   final Map<String, String> weatherImagePaths = {

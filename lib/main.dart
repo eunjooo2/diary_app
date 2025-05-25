@@ -10,7 +10,7 @@ import 'package:daily_app/settings/alarm.dart'; // 알림 함수들 import
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await initializeNotifications(); //  알림 초기화
+  // await initializeNotifications(); //  알림 초기화
   await initializeDateFormatting('ko_KR', null);
 
   final dir = await getApplicationDocumentsDirectory();

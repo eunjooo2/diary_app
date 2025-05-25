@@ -1,5 +1,5 @@
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -15,22 +15,22 @@ class EmotionBarPage extends StatefulWidget {
 class _EmotionStatsPageState extends State<EmotionBarPage> {
   DateTime _focusedMonth = DateTime.now();
 
-  final List<String> emotionKeys = ['angry', 'neutral', 'happy', 'sad', 'bad'];
+  final List<String> emotionKeys = ['happy', 'neutral', 'sad', 'bad', 'angry'];
 
   final Map<String, String> emotionImagePaths = {
-    'angry': 'assets/emotions/angry.png',
+    'sad': 'assets/emotions/sad.png',
     'neutral': 'assets/emotions/neutral.png',
     'happy': 'assets/emotions/happy.png',
-    'sad': 'assets/emotions/sad.png',
     'bad': 'assets/emotions/bad.png',
+    'angry': 'assets/emotions/angry.png',
   };
 
   final Map<String, Color> emotionColors = {
-    'angry': const Color.fromARGB(255, 125, 28, 28),
-    'neutral': const Color.fromARGB(255, 255, 136, 0),
-    'happy': const Color.fromARGB(255, 0, 255, 128),
     'sad': const Color.fromARGB(255, 255, 247, 13),
-    'bad': const Color.fromARGB(255, 255, 0, 0),
+    'neutral': const Color.fromARGB(255, 104, 217, 255),
+    'happy': const Color.fromARGB(255, 0, 255, 128),
+    'bad': const Color.fromARGB(255, 255, 145, 48),
+    'angry': const Color.fromARGB(255, 255, 8, 8),
   };
 
   Map<String, int> _getEmotionCounts(Box<DiaryEntry> box) {
@@ -51,11 +51,11 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
     final total = counts.values.fold(0, (a, b) => a + b);
     if (total == 0) return '이번 달에는 작성된 감정 기록이 없어요.';
 
-    final negativeScore = (counts['neutral'] ?? 0) + (counts['sad'] ?? 0);
+    final negativeScore = (counts['bad'] ?? 0) + (counts['angry'] ?? 0);
     final positiveScore = (counts['happy'] ?? 0);
 
     if (negativeScore > total * 0.5) {
-      return '이번 달은 마음이 조금 무거웠나 봐요.\n유독 감정에 구름이 많았던 달이었어요. \n하지만 햇살도 틈틈이 곁에 있었을 거예요.\n그 작은 빛들을 기억해봐요.';
+      return '이번 달은 마음이 조금 무거웠나 봐요.\n유독 감정에 구름이 많았던 달이었어요.\n하지만 햇살도 틈틈이 곁에 있었을 거예요.\n그 작은 빛들을 기억해봐요.';
     } else if (positiveScore > total * 0.5) {
       return '이 달은 감정의 파도가 부드럽게 이어졌어요.\n마음을 눌렀던 순간도 있었지만\n그만큼 웃는 날도 있었던 한 달이네요.\n정말 수고했어요 :)';
     } else {
@@ -68,19 +68,27 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
     final positive = counts['happy'] ?? 0;
     final negative = (counts['neutral'] ?? 0) + (counts['sad'] ?? 0);
 
-    // 피드백
+    if (total == 0) return 'assets/solution/solution_sunny.png';
+    if (negative > total * 0.5) return 'assets/solution/solution_moon.png';
+    if (positive > total * 0.5) return 'assets/solution/solution_sunny.png';
+    return 'assets/solution/solution_rainbow.png';
+  }
 
-    if (total == 0) return 'assets/solution/solution_sunny.png'; // 기본값 sunny이미지
-    if (negative > total * 0.5) {
-      // 우울+슬픔이 전체 50% 넘으면
-      return 'assets/solution/solution_moon.png';
-    } else if (positive > total * 0.5) {
-      // 행복이 전체의 50% 넘으면
-      return 'assets/solution/solution_sunny.png';
-    } else {
-      // 감정이 골고루 섞여있을 때
-      return 'assets/solution/solution_rainbow.png';
-    }
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color.fromARGB(255, 255, 224, 246),
+        title: const Text('이달의 감정 요약'),
+        content: const Text('이번 달의 감정 기록을 바 그래프로 정리해\n감정 상태를 한눈에 확인할 수 있어요.'),
+        actions: [
+          TextButton(
+            child: const Text('확인'),
+            onPressed: () => Navigator.pop(context),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -97,72 +105,79 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Column(
+              child: Stack(
                 children: [
-                  const SizedBox(height: 3),
-                  const Icon(
-                    FontAwesomeIcons.chartSimple,
-                    size: 24,
-                    color: Color.fromARGB(255, 24, 19, 19),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Column(
                     children: [
-                      IconButton(
-                        icon: const FaIcon(FontAwesomeIcons.chevronLeft,
-                            size: 16),
-                        color: Colors.grey[500],
-                        onPressed: () {
-                          setState(() {
-                            _focusedMonth = DateTime(
-                              _focusedMonth.year,
-                              _focusedMonth.month - 1,
-                            );
-                          });
-                        },
+                      const Icon(FontAwesomeIcons.chartSimple,
+                          size: 23, color: Color.fromARGB(255, 24, 19, 19)),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.chevronLeft,
+                                size: 16),
+                            color: Colors.grey[500],
+                            onPressed: () {
+                              setState(() {
+                                _focusedMonth = DateTime(
+                                  _focusedMonth.year,
+                                  _focusedMonth.month - 1,
+                                );
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 82),
+                          Text(
+                            DateFormat('yyyy년 M월').format(_focusedMonth),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          const SizedBox(width: 82),
+                          IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.chevronRight,
+                                size: 16),
+                            color: Colors.grey[500],
+                            onPressed: () {
+                              final now = DateTime.now();
+                              if (_focusedMonth.year < now.year ||
+                                  (_focusedMonth.year == now.year &&
+                                      _focusedMonth.month < now.month)) {
+                                setState(() {
+                                  _focusedMonth = DateTime(
+                                    _focusedMonth.year,
+                                    _focusedMonth.month + 1,
+                                  );
+                                });
+                              }
+                            },
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Text(
-                        DateFormat('yyyy년 M월').format(_focusedMonth),
-                        style: const TextStyle(
+                      const SizedBox(height: 13),
+                      const Text(
+                        '이달의 감정 요약',
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 16,
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: const FaIcon(FontAwesomeIcons.chevronRight,
-                            size: 16),
-                        color: Colors.grey[500],
-                        onPressed: () {
-                          final now = DateTime.now();
-                          if (_focusedMonth.year < now.year ||
-                              (_focusedMonth.year == now.year &&
-                                  _focusedMonth.month < now.month)) {
-                            setState(() {
-                              _focusedMonth = DateTime(
-                                _focusedMonth.year,
-                                _focusedMonth.month + 1,
-                              );
-                            });
-                          }
-                        },
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    '감정 통계',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                  Positioned(
+                    right: 0,
+                    top: -10,
+                    child: IconButton(
+                      icon: const FaIcon(FontAwesomeIcons.circleInfo,
+                          color: Color.fromARGB(255, 255, 200, 241), size: 18),
+                      onPressed: _showHelpDialog,
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
-            const SizedBox(height: 50), // 날짜와 그래프 간격
+            const SizedBox(height: 50),
             AspectRatio(
               aspectRatio: 1.2,
               child: BarChart(
@@ -225,7 +240,7 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 70), // 피드백 상자와 그래프 간격격
+            const SizedBox(height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Container(

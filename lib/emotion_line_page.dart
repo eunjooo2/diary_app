@@ -9,12 +9,12 @@ class EmotionLinePage extends StatefulWidget {
   const EmotionLinePage({super.key});
 
   @override
-  State<EmotionLinePage> createState() => _EmotionTrendPageState();
+  State<EmotionLinePage> createState() => _EmotionLinePageState();
 }
 
-class _EmotionTrendPageState extends State<EmotionLinePage> {
+class _EmotionLinePageState extends State<EmotionLinePage> {
   List<Map<String, dynamic>> weeklyEmotionData = [];
-  DateTime currentMonth = DateTime.now();
+  DateTime _focusedMonth = DateTime.now();
 
   final Map<String, int> emotionToScore = {
     'angry': -2,
@@ -25,11 +25,11 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
   };
 
   final Map<int, Color> scoreColors = {
-    -2: Colors.red,
-    -1: Colors.deepOrange,
+    -2: const Color.fromARGB(255, 255, 17, 0),
+    -1: const Color.fromARGB(255, 255, 135, 22),
     0: Colors.amber,
-    1: Colors.orange,
-    2: Colors.green,
+    1: const Color.fromARGB(255, 0, 174, 255),
+    2: const Color.fromARGB(255, 0, 175, 6),
   };
 
   final Map<int, String> emotionImages = {
@@ -52,8 +52,8 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
 
     final data = calculateWeeklyEmotionData(
       entries,
-      currentMonth.year,
-      currentMonth.month,
+      _focusedMonth.year,
+      _focusedMonth.month,
     );
 
     setState(() {
@@ -62,10 +62,35 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
   }
 
   void changeMonth(int offset) {
-    setState(() {
-      currentMonth = DateTime(currentMonth.year, currentMonth.month + offset);
-    });
-    loadEmotionData();
+    final newMonth = DateTime(_focusedMonth.year, _focusedMonth.month + offset);
+    final now = DateTime.now();
+    final isFuture = newMonth.year > now.year ||
+        (newMonth.year == now.year && newMonth.month > now.month);
+
+    if (!isFuture) {
+      setState(() {
+        _focusedMonth = newMonth;
+      });
+      loadEmotionData();
+    }
+  }
+
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color.fromARGB(255, 255, 224, 246),
+        title: const Text('이달의 감정 흐름'),
+        content: const Text(
+            '한 달 동안의 감정 변화를 주차 단위로 정리해 선 그래프로 표현했어요. 이번달 나의 감정의 흐름을 살펴보세요.'),
+        actions: [
+          TextButton(
+            child: const Text('확인'),
+            onPressed: () => Navigator.pop(context),
+          )
+        ],
+      ),
+    );
   }
 
   List<Map<String, dynamic>> calculateWeeklyEmotionData(
@@ -108,63 +133,87 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDEB),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 50),
+      body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 8),
-            const FaIcon(FontAwesomeIcons.chartLine, size: 22), // 연결 아이콘
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 16),
-                  onPressed: () => changeMonth(-1),
-                ),
-                Text(
-                  DateFormat.yMMMM('ko_KR').format(currentMonth),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.chevronRight, size: 16),
-                  onPressed: () => changeMonth(1),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              '주차별 감정 변화 추이',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.only(top: 15.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                      const Icon(FontAwesomeIcons.chartLine,
+                          size: 23, color: Color.fromARGB(255, 24, 19, 19)),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.chevronLeft,
+                                size: 16),
+                            color: Colors.grey[500],
+                            onPressed: () => changeMonth(-1),
+                          ),
+                          const SizedBox(width: 82),
+                          Text(
+                            DateFormat('yyyy년 M월').format(_focusedMonth),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          const SizedBox(width: 82),
+                          IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.chevronRight,
+                                size: 16),
+                            color: Colors.grey[500],
+                            onPressed: () => changeMonth(1),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 13),
+                      const Text(
+                        '이달의 감정 흐름',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: -10,
+                    child: IconButton(
+                      icon: const FaIcon(FontAwesomeIcons.circleInfo,
+                          color: Color.fromARGB(255, 255, 200, 241), size: 18),
+                      onPressed: _showHelpDialog,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 35),
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
               child: AspectRatio(
-                aspectRatio: 0.9,
+                aspectRatio: 1.1,
                 child: LineChart(
                   LineChartData(
-                    minY: -2,
-                    maxY: 2.2,
+                    minY: -2.3,
+                    maxY: 2.3,
                     gridData: FlGridData(show: true),
                     titlesData: FlTitlesData(
                       bottomTitles: AxisTitles(
-                        axisNameWidget:
-                            const SizedBox.shrink(), // 축 이름이 없으면 shrink
                         sideTitles: SideTitles(
                           showTitles: true,
                           interval: 1.0,
-                          reservedSize: 28,
+                          reservedSize: 36,
                           getTitlesWidget: (value, meta) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 13), //  아래로 내림
-                              child: Text('${value.toInt() + 1}주차',
-                                  style: const TextStyle(fontSize: 12)),
-                            );
+                            if (value >= 0 && value <= 4) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text('${value.toInt() + 1}주차',
+                                    style: const TextStyle(fontSize: 12)),
+                              );
+                            }
+                            return const SizedBox.shrink();
                           },
                         ),
                       ),
@@ -173,8 +222,9 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
                           showTitles: true,
                           interval: 1.0,
                           getTitlesWidget: (value, _) {
-                            if (value > 2 || value < -2)
+                            if (value > 2 || value < -2) {
                               return const SizedBox.shrink();
+                            }
                             return Transform.translate(
                               offset: const Offset(0, -4),
                               child: Text(
@@ -186,12 +236,10 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
                           },
                         ),
                       ),
-                      rightTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
+                      rightTitles:
+                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles:
+                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     ),
                     lineBarsData: [
                       LineChartBarData(
@@ -202,11 +250,11 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
                             weeklyEmotionData[index]['score'].toDouble(),
                           ),
                         ),
-                        isCurved: true, // false하면 직선
+                        isCurved: true,
                         curveSmoothness: 0.15,
                         color: const Color.fromARGB(255, 245, 198, 255),
                         dotData: FlDotData(
-                          show: true, // dot 유무
+                          show: true,
                           getDotPainter: (spot, percent, barData, index) {
                             final score = weeklyEmotionData[index]['score'];
                             final color = scoreColors[score] ?? Colors.grey;
@@ -225,7 +273,7 @@ class _EmotionTrendPageState extends State<EmotionLinePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
             _buildLegend(),
           ],
         ),

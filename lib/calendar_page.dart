@@ -33,6 +33,24 @@ class _CalendarPageState extends State<CalendarPage> {
     'snow': 'assets/weather/snow.png',
   };
 
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color.fromARGB(255, 255, 224, 246),
+        title: const Text('캘린더'),
+        content: const Text(
+            '작성한 일기의 감정은 달력에서 바로 확인할 수 있어요. 날짜를 선택하면 감정, 날씨, 내용까지 자세히 볼 수 있고, 수정이나 삭제도 가능해요.'),
+        actions: [
+          TextButton(
+            child: const Text('확인'),
+            onPressed: () => Navigator.pop(context),
+          )
+        ],
+      ),
+    );
+  }
+
   DateTime _stripTime(DateTime date) =>
       DateTime(date.year, date.month, date.day);
 
@@ -63,46 +81,73 @@ class _CalendarPageState extends State<CalendarPage> {
           padding: const EdgeInsets.only(bottom: 20),
           child: Column(
             children: [
-              const SizedBox(height: 9),
-              const Center(child: FaIcon(FontAwesomeIcons.calendar, size: 26)),
-              const SizedBox(height: 3),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 16),
-                    onPressed: () {
-                      setState(() {
-                        _focusedDay = DateTime(
-                          _focusedDay.year,
-                          _focusedDay.month - 1,
-                        );
-                        _selectedDay = null;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: 85), // 왼쪽과 오른쪽 간격 늘림
-                  Text(
-                    '${_focusedDay.year}년 ${_focusedDay.month}월',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 85), // 오른쪽 간격 추가
-                  IconButton(
-                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: 16),
-                    onPressed: () {
-                      setState(() {
-                        _focusedDay = DateTime(
-                          _focusedDay.year,
-                          _focusedDay.month + 1,
-                        );
-                        _selectedDay = null;
-                      });
-                    },
-                  ),
-                ],
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        const Icon(FontAwesomeIcons.calendar,
+                            size: 23, color: Color.fromARGB(255, 24, 19, 19)),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.chevronLeft,
+                                  size: 16),
+                              color: Colors.grey[500],
+                              onPressed: () {
+                                setState(() {
+                                  _focusedDay = DateTime(
+                                      _focusedDay.year, _focusedDay.month - 1);
+                                  _selectedDay = null;
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 82),
+                            Text(
+                              '${_focusedDay.year}년 ${_focusedDay.month}월',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            const SizedBox(width: 82),
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.chevronRight,
+                                  size: 16),
+                              color: Colors.grey[500],
+                              onPressed: () {
+                                final now = DateTime.now();
+                                final isFuture = _focusedDay.year > now.year ||
+                                    (_focusedDay.year == now.year &&
+                                        _focusedDay.month >= now.month);
+                                if (!isFuture) {
+                                  setState(() {
+                                    _focusedDay = DateTime(_focusedDay.year,
+                                        _focusedDay.month + 1);
+                                    _selectedDay = null;
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Positioned(
+                      top: -10,
+                      right: 0,
+                      child: IconButton(
+                        icon: const FaIcon(FontAwesomeIcons.circleInfo,
+                            color: Color.fromARGB(255, 255, 200, 241),
+                            size: 18),
+                        onPressed: _showHelpDialog,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
               if (_selectedDay != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -163,12 +208,10 @@ class _CalendarPageState extends State<CalendarPage> {
                           emotionImagePaths.containsKey(record.emotion)) {
                         return Center(
                           child: Container(
-                            // 캘린더에 띄워질 감정 이모지
                             width: 40,
                             height: 40,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
+                            decoration:
+                                const BoxDecoration(shape: BoxShape.circle),
                             child: ClipOval(
                               child: Image.asset(
                                 emotionImagePaths[record.emotion]!,
@@ -183,6 +226,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                 ),
               ),
+              // 아래는 일기 박스 관련 UI 그대로 유지
               if (selected != null && selectedRecord != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -204,12 +248,11 @@ class _CalendarPageState extends State<CalendarPage> {
                             ),
                             PopupMenuButton<String>(
                               icon: const FaIcon(
-                                FontAwesomeIcons.ellipsisVertical, // ←... 아이콘
-                                size: 19,
-                                color: Colors.grey,
-                              ),
-                              offset: const Offset(0, 30), //  메뉴 위치를 아이콘 아래로
-                              padding: EdgeInsets.zero, // 여백 최소화
+                                  FontAwesomeIcons.ellipsisVertical,
+                                  size: 19,
+                                  color: Colors.grey),
+                              offset: const Offset(0, 30),
+                              padding: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -281,7 +324,6 @@ class _CalendarPageState extends State<CalendarPage> {
                                 if (weatherImagePaths
                                     .containsKey(selectedRecord.weather))
                                   ClipRRect(
-                                    // 감정박스에에 날씨이모지
                                     borderRadius: BorderRadius.circular(1),
                                     child: Image.asset(
                                       weatherImagePaths[
@@ -340,11 +382,8 @@ class _CalendarPageState extends State<CalendarPage> {
                             ),
                             const SizedBox(height: 20),
                             IconButton(
-                              icon: const FaIcon(
-                                FontAwesomeIcons.plus,
-                                size: 18,
-                                color: Colors.black38,
-                              ),
+                              icon: const FaIcon(FontAwesomeIcons.plus,
+                                  size: 18, color: Colors.black38),
                               onPressed: () async {
                                 final result = await Navigator.push(
                                   context,

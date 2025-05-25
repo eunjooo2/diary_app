@@ -9,10 +9,6 @@ flutter:
     - assets/emotions/
     - assets/weather/
     - assets/solution/
-  # fonts:
-  #   - family: NotoSansKR
-  #     fonts:
-  #       - asset: assets/fonts/NotoSansKR-Regular.otf
 
 dependencies:
   flutter:
@@ -20,8 +16,6 @@ dependencies:
   font_awesome_flutter: ^10.5.0
   table_calendar: ^3.0.9
   intl: ^0.20.2
-  flutter_local_notifications: ^13.0.0
-  timezone: ^0.9.0
   shared_preferences: ^2.2.1
   fl_chart: ^0.70.2
   flutter_screenutil: ^5.9.0
