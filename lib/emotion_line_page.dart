@@ -193,7 +193,7 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
               child: AspectRatio(
-                aspectRatio: 1.1,
+                aspectRatio: 1.0,
                 child: LineChart(
                   LineChartData(
                     minY: -2.3,
