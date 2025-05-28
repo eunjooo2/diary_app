@@ -206,7 +206,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Transform.translate(
-                          offset: const Offset(0, -12), // 위로 올리기
+                          offset: const Offset(0, -12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

@@ -226,7 +226,6 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                 ),
               ),
-              // 아래는 일기 박스 관련 UI 그대로 유지
               if (selected != null && selectedRecord != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),

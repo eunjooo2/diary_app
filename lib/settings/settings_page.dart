@@ -68,53 +68,82 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   const FaIcon(FontAwesomeIcons.clock, size: 28),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      DropdownButton<int>(
-                        value: tempHour,
-                        icon: const FaIcon(FontAwesomeIcons.angleDown,
-                            size: 16), // ⬅️ 여기에 추가!
-                        items: List.generate(24, (i) {
-                          return DropdownMenuItem(
-                            value: i,
-                            child: Text(i.toString().padLeft(2, '0')),
-                          );
-                        }),
-                        onChanged: (val) =>
-                            setStateBottom(() => tempHour = val!),
-                      ),
-                      const Text(' : '),
-                      DropdownButton<int>(
-                        value: tempMinute,
-                        icon: const FaIcon(FontAwesomeIcons.angleDown,
-                            size: 16), // 이거!
-                        items: List.generate(60, (i) {
-                          return DropdownMenuItem(
-                            value: i,
-                            child: Text(i.toString().padLeft(2, '0')),
-                          );
-                        }),
-                        onChanged: (val) =>
-                            setStateBottom(() => tempMinute = val!),
-                      ),
-                    ],
+                  SizedBox(
+                    height: 150,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 100,
+                          child: ListWheelScrollView.useDelegate(
+                            itemExtent: 40,
+                            controller: FixedExtentScrollController(
+                                initialItem: tempHour),
+                            onSelectedItemChanged: (val) =>
+                                setStateBottom(() => tempHour = val),
+                            physics: const FixedExtentScrollPhysics(),
+                            childDelegate: ListWheelChildBuilderDelegate(
+                              childCount: 24,
+                              builder: (context, index) => Center(
+                                child: Text(
+                                  '$index 시',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: tempHour == index
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: tempHour == index
+                                        ? Colors.black
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: 100,
+                          child: ListWheelScrollView.useDelegate(
+                            itemExtent: 40,
+                            controller: FixedExtentScrollController(
+                                initialItem: tempMinute),
+                            onSelectedItemChanged: (val) =>
+                                setStateBottom(() => tempMinute = val),
+                            physics: const FixedExtentScrollPhysics(),
+                            childDelegate: ListWheelChildBuilderDelegate(
+                              childCount: 60,
+                              builder: (context, index) => Center(
+                                child: Text(
+                                  '$index 분',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: tempMinute == index
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: tempMinute == index
+                                        ? Colors.black
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () async {
                       Navigator.pop(context);
-
-                      // 외부 setState로 반영
                       setState(() {
                         selectedTime =
                             TimeOfDay(hour: tempHour, minute: tempMinute);
                       });
-
                       final box = await Hive.openBox('settings');
                       await box.put('alarm_hour', tempHour);
                       await box.put('alarm_minute', tempMinute);
-
                       if (isNotificationOn) {
                         await cancelAlarm();
                         try {
@@ -158,8 +187,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const PasswordSettingPage(),
-                  ),
+                      builder: (_) => const PasswordSettingPage()),
                 );
               },
             ),
@@ -169,9 +197,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const PasswordChangePage(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const PasswordChangePage()),
                 );
               },
             ),
@@ -231,9 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const AppInfoPage(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const AppInfoPage()),
                 );
               },
             ),
