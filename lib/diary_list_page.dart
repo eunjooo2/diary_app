@@ -120,9 +120,10 @@ class _DiaryListPageState extends State<DiaryListPage> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color.fromARGB(255, 255, 250, 254),
                   border: Border.all(
-                      color: const Color.fromARGB(255, 211, 211, 211)),
+                      // 박스 테두리 색상상
+                      color: const Color.fromARGB(255, 239, 182, 255)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -131,11 +132,11 @@ class _DiaryListPageState extends State<DiaryListPage> {
                     Text(
                       '오늘 하루는 어떤 하루였나요?\n오늘의 감정을 기록하세요!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54),
+                      style: TextStyle(color: Color.fromARGB(95, 134, 0, 103)),
                     ),
                     SizedBox(height: 15),
                     FaIcon(FontAwesomeIcons.plus,
-                        size: 18, color: Color.fromARGB(95, 86, 79, 79)),
+                        size: 18, color: Color.fromARGB(95, 102, 18, 82)),
                   ],
                 ),
               ),
@@ -214,22 +215,50 @@ class _DiaryListPageState extends State<DiaryListPage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
-                                    child: Text(
-                                      DateFormat('yyyy년 MM월 dd일 EEEE', 'ko_KR')
-                                          .format(entry.date),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: Colors.black, // 기본 텍스트 색상
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: DateFormat(
+                                                    'yyyy년 MM월 dd일 ', 'ko_KR')
+                                                .format(entry.date),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                '| ${DateFormat('EEEE', 'ko_KR').format(entry.date)}',
+                                            style: TextStyle(
+                                              color: const Color.fromARGB(
+                                                  255, 90, 90, 90), // 요일 색상
+                                              fontWeight:
+                                                  FontWeight.normal, // 살짝 덜 강조
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
                                   PopupMenuButton<String>(
                                     // ... 마크
-                                    padding: EdgeInsets.only(left: 11),
-                                    icon: FaIcon(
+                                    padding: const EdgeInsets.only(left: 18),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: const BorderSide(
+                                        color:
+                                            Color(0xFFE9CFF4), // 💜 연보라 테두리 색상
+                                        width: 1,
+                                      ),
+                                    ),
+                                    color:
+                                        const Color(0xFFFFF0FB), // 💗 연보라 배경색
+                                    icon: const FaIcon(
                                       FontAwesomeIcons.ellipsis,
                                       size: 16,
-                                      color: Colors.grey[500],
+                                      color: Color.fromARGB(255, 184, 184, 184),
                                     ),
                                     onSelected: (value) async {
                                       if (value == 'edit') {
@@ -250,59 +279,73 @@ class _DiaryListPageState extends State<DiaryListPage> {
                                     },
                                     itemBuilder: (context) => [
                                       const PopupMenuItem(
-                                          value: 'edit', child: Text('수정')),
+                                        value: 'edit',
+                                        child: Center(
+                                          child: Text(
+                                            '✏️ 수정',
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
                                       const PopupMenuItem(
-                                          value: 'delete', child: Text('삭제')),
+                                        value: 'delete',
+                                        child: Center(
+                                          child: Text(
+                                            '🗑 삭제',
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                ],
-                              ),
-                              Text(
-                                // 일기 텍스트
-                                isExpanded || (entry.text?.length ?? 0) <= 70
-                                    ? entry.text ?? ''
-                                    : '${entry.text!.substring(0, 70)}...',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.black87,
-                                  height: 1.4,
-                                ),
-                              ),
-                              if ((entry.text?.length ?? 0) > 70)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8), // 위쪽 간격만 약간 줘도 충분
-                                  child: TextButton.icon(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size(0, 0),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _expandedStates[index] =
-                                            !_expandedStates[index];
-                                      });
-                                    },
-                                    icon: FaIcon(
-                                      isExpanded
-                                          ? FontAwesomeIcons.chevronUp
-                                          : FontAwesomeIcons.chevronDown,
-                                      size: 12,
-                                      color: const Color.fromARGB(
-                                          255, 184, 149, 199),
-                                    ),
-                                    label: Text(
-                                      isExpanded ? '접기' : '더보기',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color:
-                                            Color.fromARGB(255, 184, 149, 199),
-                                      ),
+                                  Text(
+                                    // 일기 텍스트
+                                    isExpanded ||
+                                            (entry.text?.length ?? 0) <= 70
+                                        ? entry.text ?? ''
+                                        : '${entry.text!.substring(0, 70)}...',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black87,
+                                      height: 1.4,
                                     ),
                                   ),
-                                ),
+                                  if ((entry.text?.length ?? 0) > 70)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: TextButton.icon(
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size(0, 0),
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _expandedStates[index] =
+                                                !_expandedStates[index];
+                                          });
+                                        },
+                                        icon: FaIcon(
+                                          isExpanded
+                                              ? FontAwesomeIcons.chevronUp
+                                              : FontAwesomeIcons.chevronDown,
+                                          size: 12,
+                                          color: const Color.fromARGB(
+                                              255, 184, 149, 199),
+                                        ),
+                                        label: Text(
+                                          isExpanded ? '접기' : '더보기',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Color.fromARGB(
+                                                255, 184, 149, 199),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
                         ),

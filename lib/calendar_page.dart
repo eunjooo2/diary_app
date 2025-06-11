@@ -36,18 +36,56 @@ class _CalendarPageState extends State<CalendarPage> {
   void _showHelpDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color.fromARGB(255, 255, 224, 246),
-        title: const Text('캘린더'),
-        content: const Text(
-            '작성한 일기의 감정은 달력에서 바로 확인할 수 있어요. 날짜를 선택하면 감정, 날씨, 내용까지 자세히 볼 수 있고, 수정이나 삭제도 가능해요.'),
-        actions: [
-          TextButton(
-            child: const Text('확인'),
-            onPressed: () => Navigator.pop(context),
-          )
-        ],
-      ),
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFFFFE0F6), // 연핑크
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '캘린더',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '작성한 일기는 캘린더에서 \n한 눈에 확인해볼 수가 있어요.\n'
+                  '날짜를 선택하면 감정, 날씨, 내용까지 \n 자세히 볼 수 있고, 수정이나 삭제도 \n가능해요.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 36, vertical: 12),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    '확인',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -106,13 +144,13 @@ class _CalendarPageState extends State<CalendarPage> {
                                 });
                               },
                             ),
-                            const SizedBox(width: 82),
+                            const SizedBox(width: 75),
                             Text(
                               '${_focusedDay.year}년 ${_focusedDay.month}월',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 18),
                             ),
-                            const SizedBox(width: 82),
+                            const SizedBox(width: 75),
                             IconButton(
                               icon: const FaIcon(FontAwesomeIcons.chevronRight,
                                   size: 16),
@@ -353,6 +391,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Text(
@@ -374,12 +413,13 @@ class _CalendarPageState extends State<CalendarPage> {
                         ),
                         child: Column(
                           children: [
+                            const SizedBox(height: 10),
                             const Text(
                               '오늘 하루는 어떤 하루였나요?\n오늘의 감정을 기록해주세요!',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: Colors.grey),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 5),
                             IconButton(
                               icon: const FaIcon(FontAwesomeIcons.plus,
                                   size: 18, color: Colors.black38),

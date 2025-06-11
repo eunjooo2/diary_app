@@ -20,13 +20,13 @@ class DailyApp extends StatelessWidget {
   }
 }
 
-// lock 화면면
+// lock 화면
 class lock_screen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('오늘의 감정 기록')),
-      body: Center(child: Text('홈 UI 여기에 들어갈 거예요!')),
+      // body: Center(child: Text('홈 UI 여기에 들어갈 거예요!')),
     );
   }
 }

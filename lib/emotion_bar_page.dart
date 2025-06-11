@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../models/diary_entry.dart';
 
 class EmotionBarPage extends StatefulWidget {
-  const EmotionBarPage({Key? key}) : super(key: key);
+  const EmotionBarPage({super.key});
 
   @override
   State<EmotionBarPage> createState() => _EmotionStatsPageState();
@@ -52,42 +52,80 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
     if (total == 0) return '이번 달에는 작성된 감정 기록이 없어요.';
 
     final negativeScore = (counts['bad'] ?? 0) + (counts['angry'] ?? 0);
-    final positiveScore = (counts['happy'] ?? 0);
+    final positiveScore = (counts['happy'] ?? 0) + (counts['neutral'] ?? 0);
 
     if (negativeScore > total * 0.5) {
       return '이번 달은 마음이 조금 무거웠나 봐요.\n유독 감정에 구름이 많았던 달이었어요.\n하지만 햇살도 틈틈이 곁에 있었을 거예요.\n그 작은 빛들을 기억해봐요.';
     } else if (positiveScore > total * 0.5) {
-      return '이 달은 감정의 파도가 부드럽게 이어졌어요.\n마음을 눌렀던 순간도 있었지만\n그만큼 웃는 날도 있었던 한 달이네요.\n정말 수고했어요 :)';
+      return '이 달은 감정의 파도가 부드럽게 이어졌어요. 마음을 눌렀던 순간도 있었지만, \n그만큼 웃는 날도 있었던 한 달이네요. \n정말 수고했어요 :)';
     } else {
-      return '감정은 다양하게 흘러가요.\n기쁨도, 슬픔도 모두 당신의 한 부분이에요.\n이번 달도 잘 지나왔어요. 정말 수고했어요 :)';
+      return '감정은 다양하게 흘러가요. 기쁨도, 슬픔도, 때론 복잡한 마음까지 모두 당신의 한 부분이에요. 어떤 하루든 무의미한 날은 없었어요.이번 달도 잘 지나왔어요. 정말 수고했어요 :)';
     }
   }
 
   String _getSolutionImage(Map<String, int> counts) {
     final total = counts.values.fold(0, (a, b) => a + b);
-    final positive = counts['happy'] ?? 0;
+    final positive = (counts['happy'] ?? 0) + (counts['neutral'] ?? 0);
     final negative = (counts['bad'] ?? 0) + (counts['angry'] ?? 0);
 
     if (total == 0) return 'assets/solution/solution_sunny.png';
     if (negative > total * 0.5) return 'assets/solution/solution_cloud.png';
     if (positive > total * 0.5) return 'assets/solution/solution_sunny.png';
-    return 'assets/solution/solution_rainbow.png';
+    return 'assets/solution/solution_rainbow.png'; // 다양한 감정
   }
 
   void _showHelpDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color.fromARGB(255, 255, 224, 246),
-        title: const Text('이달의 감정 요약'),
-        content: const Text('이번 달의 감정 기록을 바 그래프로 정리해\n감정 상태를 한눈에 확인할 수 있어요.'),
-        actions: [
-          TextButton(
-            child: const Text('확인'),
-            onPressed: () => Navigator.pop(context),
-          )
-        ],
-      ),
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFFFFE0F6), // 연핑크 배경
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '이달의 감정 요약',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '이번 달의 감정 기록을 바 그래프로 정리해\n감정 상태를 한눈에 확인할 수 있어요.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 36, vertical: 12),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    '확인',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -128,13 +166,13 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
                               });
                             },
                           ),
-                          const SizedBox(width: 82),
+                          const SizedBox(width: 75),
                           Text(
                             DateFormat('yyyy년 M월').format(_focusedMonth),
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
-                          const SizedBox(width: 82),
+                          const SizedBox(width: 75),
                           IconButton(
                             icon: const FaIcon(FontAwesomeIcons.chevronRight,
                                 size: 16),
@@ -183,7 +221,7 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
               child: BarChart(
                 BarChartData(
                   borderData: FlBorderData(show: false),
-                  gridData: FlGridData(show: false),
+                  gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
                     bottomTitles: AxisTitles(
                       axisNameSize: 80,
@@ -216,12 +254,12 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
                         },
                       ),
                     ),
-                    leftTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
                   ),
                   barGroups: List.generate(emotionKeys.length, (index) {
                     final key = emotionKeys[index];

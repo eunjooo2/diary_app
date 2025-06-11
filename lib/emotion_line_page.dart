@@ -78,18 +78,55 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
   void _showHelpDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color.fromARGB(255, 255, 224, 246),
-        title: const Text('이달의 감정 흐름'),
-        content: const Text(
-            '한 달 동안의 감정 변화를 주차 단위로 정리해 선 그래프로 표현했어요. 이번달 나의 감정의 흐름을 살펴보세요.'),
-        actions: [
-          TextButton(
-            child: const Text('확인'),
-            onPressed: () => Navigator.pop(context),
-          )
-        ],
-      ),
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFFFFE0F6), // 연핑크 배경
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '이달의 감정 흐름',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '한 달 동안의 감정 변화를 주차 단위로\n 정리해 선 그래프로 표현했어요.\n이번달 나의 감정 흐름을 살펴보세요.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 36, vertical: 12),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    '확인',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -154,13 +191,13 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
                             color: Colors.grey[500],
                             onPressed: () => changeMonth(-1),
                           ),
-                          const SizedBox(width: 82),
+                          const SizedBox(width: 75),
                           Text(
                             DateFormat('yyyy년 M월').format(_focusedMonth),
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
-                          const SizedBox(width: 82),
+                          const SizedBox(width: 75),
                           IconButton(
                             icon: const FaIcon(FontAwesomeIcons.chevronRight,
                                 size: 16),
