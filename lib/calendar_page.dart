@@ -285,19 +285,26 @@ class _CalendarPageState extends State<CalendarPage> {
                             ),
                             PopupMenuButton<String>(
                               icon: const FaIcon(
-                                  FontAwesomeIcons.ellipsisVertical,
-                                  size: 19,
-                                  color: Colors.grey),
+                                FontAwesomeIcons.ellipsisVertical,
+                                size: 19,
+                                color: Colors.grey,
+                              ),
                               offset: const Offset(0, 30),
                               padding: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(
+                                  color: Color(0xFFE9CFF4), // 💜 연보라 테두리
+                                  width: 1,
+                                ),
                               ),
+                              color: const Color(0xFFFFF0FB), // 🌸 연핑크 배경
                               onSelected: (value) async {
                                 final box =
                                     Hive.box<DiaryEntry>('diaryEntries');
                                 final formattedKey =
                                     DateFormat('yyyy-MM-dd').format(selected);
+
                                 if (value == 'edit') {
                                   final entry = box.get(formattedKey);
                                   final result = await Navigator.push(
@@ -316,9 +323,14 @@ class _CalendarPageState extends State<CalendarPage> {
                                 }
                               },
                               itemBuilder: (context) => const [
-                                PopupMenuItem(value: 'edit', child: Text('수정')),
                                 PopupMenuItem(
-                                    value: 'delete', child: Text('삭제')),
+                                  value: 'edit',
+                                  child: Center(child: Text('✏️ 수정')),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Center(child: Text('🗑 삭제')),
+                                ),
                               ],
                             ),
                           ],
@@ -381,13 +393,14 @@ class _CalendarPageState extends State<CalendarPage> {
                                   children: [
                                     TextSpan(
                                       text: (selectedRecord.text?.length ?? 0) >
-                                              50
+                                              81
                                           ? selectedRecord.text!
-                                              .substring(0, 50)
+                                              .substring(0, 80)
                                           : (selectedRecord.text ??
                                               '작성된 일기 없음'),
                                     ),
-                                    if ((selectedRecord.text?.length ?? 0) > 90)
+                                    // 미리보기 글자 수 제한
+                                    if ((selectedRecord.text?.length ?? 0) > 80)
                                       const TextSpan(
                                         text: ' ...(생략)',
                                         style: TextStyle(

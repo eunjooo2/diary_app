@@ -234,7 +234,6 @@ class _WritePageState extends State<WritePage> {
                     hintText: '오늘은 어떤 하루였나요?\n간단하게 기록해 보아요!',
                     hintStyle: TextStyle(
                       fontSize: 16,
-                      // fontFamily: 'NotoSansKR',
                       color: Colors.grey.shade500,
                     ),
                   ),

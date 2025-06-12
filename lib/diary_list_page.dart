@@ -60,7 +60,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
                 const Text(
                   '감정 일기 리스트',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
