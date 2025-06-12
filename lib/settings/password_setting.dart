@@ -13,6 +13,7 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
   String? _tempPassword;
   bool _isConfirming = false;
 
+  // 숫자 입력 처리
   void _addDigit(String digit) {
     if (_pin.length >= 4) return;
     setState(() => _pin.add(digit));
@@ -28,7 +29,10 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
         if (_tempPassword == entered) {
           _savePassword(entered);
         } else {
-          _showToast("암호가 일치하지 않습니다.");
+          _showDialog(
+            title: '앗, 틀렸어요!',
+            message: '암호가 일치하지 않아요.\n다시 처음부터 입력해 주세요.',
+          );
           _resetPin();
           setState(() => _isConfirming = false);
         }
@@ -36,29 +40,77 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
     }
   }
 
+  // 초기화
   void _resetPin() => setState(() => _pin.clear());
-
   void _deleteDigit() => setState(() {
         if (_pin.isNotEmpty) _pin.removeLast();
       });
 
+  // 암호 저장
   void _savePassword(String pin) async {
     final box = await Hive.openBox('settings');
     await box.put('pin_code', pin);
-    _showToast("암호가 설정되었습니다.");
-    if (mounted) Navigator.pop(context);
+
+    if (mounted) {
+      await _showDialog(
+        title: '암호 설정 완료',
+        message: '암호가 성공적으로\n설정되었습니다.',
+      );
+      Navigator.pop(context);
+    }
   }
 
-  void _showToast(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  // 다이얼로그
+  Future<void> _showDialog({required String title, required String message}) {
+    return showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFFFFE6F0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.purple[800],
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 15, color: Color(0xFF444444)),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purpleAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
   }
 
-  String get _guideText => _isConfirming ? '한 번 더 입력하시오' : '설정할 암호 4자리를 입력하시오';
+  // 안내 문구
+  String get _guideText => _isConfirming ? '한 번 더 입력하세요' : '설정할 암호 4자리를 입력하세요';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -68,6 +120,8 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
               style: const TextStyle(color: Colors.black38, fontSize: 16),
             ),
             const SizedBox(height: 50),
+
+            // ●●●● 입력 박스
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
@@ -88,7 +142,10 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
                 );
               }),
             ),
+
             const Spacer(),
+
+            // 키패드
             SizedBox(
               height: 280,
               child: Container(
@@ -109,6 +166,7 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
     );
   }
 
+  // 키패드 줄 생성 함수
   Widget _buildKeypadRow(List<String> labels) {
     final isDigit = RegExp(r'^\d$');
 
@@ -136,7 +194,7 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
                     border: Border.all(
                       color: isDigit.hasMatch(label)
                           ? const Color.fromARGB(255, 237, 247, 255)
-                          : const Color.fromARGB(0, 255, 225, 225),
+                          : Colors.transparent,
                       width: 0.2,
                     ),
                   ),

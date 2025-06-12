@@ -17,9 +17,10 @@ class _PinCodePageState extends State<PinCodePage> {
   @override
   void initState() {
     super.initState();
-    _loadSavedPin();
+    _loadSavedPin(); // 저장된 암호 불러오기
   }
 
+  // Hive에서 암호 불러오기
   Future<void> _loadSavedPin() async {
     final box = await Hive.openBox('settings');
     setState(() {
@@ -27,6 +28,7 @@ class _PinCodePageState extends State<PinCodePage> {
     });
   }
 
+  // 숫자 입력 처리
   void _addDigit(String digit) {
     if (_pin.length < 4) {
       setState(() => _pin.add(digit));
@@ -34,6 +36,7 @@ class _PinCodePageState extends State<PinCodePage> {
     }
   }
 
+  // 암호 일치 확인
   void _verifyPin() {
     final enteredPin = _pin.join('');
     if (enteredPin == _savedPin) {
@@ -51,12 +54,14 @@ class _PinCodePageState extends State<PinCodePage> {
     }
   }
 
+  // 숫자 하나 지우기
   void _deleteDigit() {
     if (_pin.isNotEmpty) {
       setState(() => _pin.removeLast());
     }
   }
 
+  // 취소(초기화 시도)
   void _resetPin() async {
     _cancelCount++;
 
@@ -66,6 +71,7 @@ class _PinCodePageState extends State<PinCodePage> {
 
       if (!mounted) return;
 
+      // 초기화 완료 다이얼로그
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -141,6 +147,8 @@ class _PinCodePageState extends State<PinCodePage> {
               style: TextStyle(color: Colors.black38, fontSize: 16),
             ),
             const SizedBox(height: 50),
+
+            // ● ● ● ● 암호 표시
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
@@ -161,7 +169,10 @@ class _PinCodePageState extends State<PinCodePage> {
                 );
               }),
             ),
+
             const Spacer(),
+
+            // 키패드
             SizedBox(
               height: 280,
               child: Container(
@@ -175,13 +186,14 @@ class _PinCodePageState extends State<PinCodePage> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
+  // 키패드 행 UI
   Widget _buildKeypadRow(List<String> labels) {
     return Expanded(
       child: Row(

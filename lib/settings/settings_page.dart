@@ -7,8 +7,9 @@ import 'package:daily_app/settings/password_remove.dart';
 import 'package:daily_app/settings/app_info.dart';
 import 'package:daily_app/settings/alarm.dart';
 
+/// 화상설정 페이지 - 암호, 암호 변경/삭제, 알림 설정, 앱정보
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -24,6 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadAlarmSetting();
   }
 
+  /// Hive에서 알림 설정 값 검색
   Future<void> _loadAlarmSetting() async {
     final box = await Hive.openBox('settings');
     setState(() {
@@ -34,6 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  /// 알림 on/off 클릭시 Hive 저장 및 예약/취소 처리
   Future<void> _toggleAlarm(bool value) async {
     setState(() => isNotificationOn = value);
     final box = await Hive.openBox('settings');
@@ -42,13 +45,14 @@ class _SettingsPageState extends State<SettingsPage> {
       try {
         await scheduleDailyAlarm(selectedTime.hour, selectedTime.minute);
       } catch (e) {
-        print('알림 예약 실패 (settings): $e');
+        debugPrint('예약 실패 시 무시 (예: 권한 없음, 알림 꺼짐 등) $e');
       }
     } else {
       await cancelAlarm();
     }
   }
 
+  /// 시간 선택 위한 BottomSheet
   Future<void> _showCustomTimePicker() async {
     int tempHour = selectedTime.hour;
     int tempMinute = selectedTime.minute;
@@ -150,7 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         try {
                           await scheduleDailyAlarm(tempHour, tempMinute);
                         } catch (e) {
-                          print('알림 예약 실패 (custom picker): $e');
+                          debugPrint('알림 예약 실패 (custom picker): $e');
                         }
                       }
                     },
@@ -184,13 +188,10 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               icon: FontAwesomeIcons.lock,
               text: '암호 설정',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const PasswordSettingPage()),
-                );
-              },
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PasswordSettingPage()),
+              ),
             ),
             _buildSettingItem(
               icon: FontAwesomeIcons.rotateRight,
@@ -200,6 +201,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 final savedPin = box.get('pin_code');
 
                 if (savedPin == null || savedPin.toString().isEmpty) {
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('설정된 암호가 없습니다.'),
@@ -208,7 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                   return;
                 }
-
+                if (!mounted) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const PasswordChangePage()),
@@ -223,6 +225,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 final savedPin = box.get('pin_code');
 
                 if (savedPin == null || savedPin.toString().isEmpty) {
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('설정된 암호가 없습니다.'),
@@ -231,7 +234,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                   return;
                 }
-
+                if (!mounted) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const PasswordRemovePage()),
@@ -250,8 +253,8 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       FaIcon(FontAwesomeIcons.clock,
                           size: 22, color: Colors.black87),
                       SizedBox(width: 17),
@@ -275,10 +278,9 @@ class _SettingsPageState extends State<SettingsPage> {
                           const SizedBox(width: 8),
                           Text(
                             selectedTime.format(context),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87
-                                  .withOpacity(isNotificationOn ? 1.0 : 0.4),
+                              color: Colors.black87,
                             ),
                           ),
                         ],
@@ -291,12 +293,10 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               icon: FontAwesomeIcons.circleInfo,
               text: '앱 정보',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AppInfoPage()),
-                );
-              },
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AppInfoPage()),
+              ),
             ),
             const SizedBox(height: 40),
           ],
@@ -305,6 +305,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// 일반 설정 아이템 빌더 (아이콘 + 텍스트)
   Widget _buildSettingItem({
     required IconData icon,
     required String text,
@@ -317,6 +318,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// Switch 설정 아이템 빌더
   Widget _buildSwitchItem({
     required IconData icon,
     required String text,

@@ -5,13 +5,13 @@ import 'package:hive/hive.dart';
 import '../models/diary_entry.dart';
 
 class WritePage extends StatefulWidget {
-  final DateTime selectedDate; // 날짜
-  final DiaryEntry? existingEntry; // 수정용
+  final DateTime selectedDate;
+  final DiaryEntry? existingEntry;
 
   const WritePage({
     super.key,
     required this.selectedDate,
-    this.existingEntry, //  선택적 파라미터 (null 허용)
+    this.existingEntry,
   });
 
   @override
@@ -20,13 +20,13 @@ class WritePage extends StatefulWidget {
 
 class _WritePageState extends State<WritePage> {
   final TextEditingController _controller = TextEditingController();
-
   bool _isWriting = false;
 
-  // 기본 선택된 감정/날씨
+  // 감정/날씨 기본값
   String selectedEmotion = 'happy';
   String selectedWeather = 'sunny';
 
+  // 감정 이미지 경로
   final Map<String, String> emotionImagePaths = {
     'happy': 'assets/emotions/happy.png',
     'neutral': 'assets/emotions/neutral.png',
@@ -35,6 +35,7 @@ class _WritePageState extends State<WritePage> {
     'angry': 'assets/emotions/angry.png',
   };
 
+  // 날씨 이미지 경로
   final Map<String, String> weatherImagePaths = {
     'sunny': 'assets/weather/sunny.png',
     'cloud': 'assets/weather/cloud.png',
@@ -46,7 +47,7 @@ class _WritePageState extends State<WritePage> {
   void initState() {
     super.initState();
 
-    // 수정 모드일 경우 초기값 채우기
+    // 수정 모드일 경우 초기값 설정
     if (widget.existingEntry != null) {
       selectedEmotion = widget.existingEntry!.emotion;
       selectedWeather = widget.existingEntry!.weather;
@@ -60,6 +61,7 @@ class _WritePageState extends State<WritePage> {
     });
   }
 
+  // 감정 선택 다이얼로그
   void _selectEmotion() async {
     final result = await showDialog<String>(
       context: context,
@@ -87,6 +89,7 @@ class _WritePageState extends State<WritePage> {
     }
   }
 
+  // 날씨 선택 다이얼로그
   void _selectWeather() async {
     final result = await showDialog<String>(
       context: context,
@@ -114,9 +117,31 @@ class _WritePageState extends State<WritePage> {
     }
   }
 
+  // 감정일기 저장 처리
+  Future<void> _saveEntry() async {
+    final date = widget.selectedDate;
+    final formattedKey = DateFormat('yyyy-MM-dd').format(date);
+
+    final entry = DiaryEntry(
+      date: date,
+      emotion: selectedEmotion,
+      weather: selectedWeather,
+      text: _controller.text,
+    );
+
+    final box = Hive.box<DiaryEntry>('diaryEntries');
+    await box.put(formattedKey, entry);
+
+    Navigator.pop(context, {
+      'emotion': selectedEmotion,
+      'weather': selectedWeather,
+      'text': _controller.text,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final String formattedDate =
+    final formattedDate =
         DateFormat('yyyy년 M월 d일 EEEE', 'ko').format(widget.selectedDate);
 
     return Scaffold(
@@ -125,14 +150,9 @@ class _WritePageState extends State<WritePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const FaIcon(
-            FontAwesomeIcons.chevronLeft,
-            size: 16,
-            color: Colors.black,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const FaIcon(FontAwesomeIcons.chevronLeft,
+              size: 16, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: Text(
@@ -141,31 +161,7 @@ class _WritePageState extends State<WritePage> {
         ),
         actions: [
           TextButton(
-            onPressed: () async {
-              final date = widget.selectedDate; // 선택 날짜 사용
-              final formattedKey = DateFormat('yyyy-MM-dd').format(date);
-
-              final entry = DiaryEntry(
-                date: date,
-                emotion: selectedEmotion,
-                weather: selectedWeather,
-                text: _controller.text,
-              );
-
-              final box = Hive.box<DiaryEntry>('diaryEntries');
-              await box.put(formattedKey, entry);
-
-              print(" Hive 저장됨: $formattedKey");
-              print(" 감정: ${entry.emotion}");
-              print(" 날씨: ${entry.weather}");
-              print(" 텍스트: ${entry.text}");
-
-              Navigator.pop(context, {
-                'emotion': selectedEmotion,
-                'weather': selectedWeather,
-                'text': _controller.text,
-              });
-            },
+            onPressed: _saveEntry,
             child: const Text(
               '저장',
               style: TextStyle(color: Colors.black, fontSize: 16),
@@ -173,11 +169,15 @@ class _WritePageState extends State<WritePage> {
           ),
         ],
       ),
+
+      // 본문
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Column(
           children: [
             const SizedBox(height: 24),
+
+            // 감정 + 날씨 선택 이미지
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -219,7 +219,10 @@ class _WritePageState extends State<WritePage> {
                 ),
               ],
             ),
+
             const SizedBox(height: 24),
+
+            // 일기 입력창
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),

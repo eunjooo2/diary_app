@@ -1,9 +1,10 @@
-// # 일기 리스트 페이지
+// 감정 일기 리스트 페이지
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+
 import '../models/diary_entry.dart';
 import 'calendar_page.dart';
 import 'settings/settings_page.dart';
@@ -20,21 +21,22 @@ class DiaryListPage extends StatefulWidget {
 
 class _DiaryListPageState extends State<DiaryListPage> {
   int _selectedIndex = 0;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   String _searchKeyword = '';
   DateTime? _searchDate;
   List<bool> _expandedStates = [];
 
+  // 바텀 네비게이션바 탭 전환
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
 
+  // 일기 리스트 뷰 생성
   Widget _buildDiaryListView() {
     final box = Hive.box<DiaryEntry>('diaryEntries');
     final entries = box.values.toList().reversed.toList();
 
+    // 날짜 + 키워드 필터링
     final filteredEntries = entries.where((entry) {
       final matchesDate = _searchDate == null ||
           DateFormat('yyyy-MM-dd').format(entry.date) ==
@@ -45,6 +47,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
       return matchesDate && matchesKeyword;
     }).toList();
 
+    // 더보기 상태 동기화
     if (_expandedStates.length != filteredEntries.length) {
       _expandedStates = List.generate(filteredEntries.length, (_) => false);
     }
@@ -52,6 +55,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
     return SafeArea(
       child: Column(
         children: [
+          // 상단 타이틀 + 날짜 필터
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
@@ -59,10 +63,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
               children: [
                 const Text(
                   '감정 일기 리스트',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Row(
                   children: [
@@ -97,15 +98,13 @@ class _DiaryListPageState extends State<DiaryListPage> {
               ],
             ),
           ),
+
+          // 텍스트 검색창
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TextField(
               controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchKeyword = value;
-                });
-              },
+              onChanged: (value) => setState(() => _searchKeyword = value),
               decoration: InputDecoration(
                 hintText: '검색어를 입력하세요.',
                 hintStyle: TextStyle(color: Colors.grey[500]),
@@ -113,9 +112,6 @@ class _DiaryListPageState extends State<DiaryListPage> {
                 fillColor: const Color.fromARGB(255, 255, 236, 253),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
-                  borderSide: const BorderSide(
-                    color: Color.fromARGB(255, 162, 9, 192),
-                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
@@ -127,12 +123,15 @@ class _DiaryListPageState extends State<DiaryListPage> {
                 suffixIcon: IconButton(
                   icon:
                       const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
-                  onPressed: () {},
+                  onPressed: () {}, // 동작 없음
                 ),
               ),
             ),
           ),
+
           const SizedBox(height: 12),
+
+          // 오늘 일기 작성 유도 박스
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GestureDetector(
@@ -173,7 +172,10 @@ class _DiaryListPageState extends State<DiaryListPage> {
               ),
             ),
           ),
+
           const SizedBox(height: 12),
+
+          // 필터링된 일기 리스트
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -181,191 +183,195 @@ class _DiaryListPageState extends State<DiaryListPage> {
               itemBuilder: (context, index) {
                 final entry = filteredEntries[index];
                 final key = box.keyAt(box.length - 1 - index);
-                final emotionPath = 'assets/emotions/${entry.emotion}.png';
-                final weatherPath = 'assets/weather/${entry.weather}.png';
                 final isExpanded = _expandedStates[index];
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                emotionPath,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            width: 25,
-                            height: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(2),
-                              child: Image.asset(
-                                weatherPath,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Transform.translate(
-                          offset: const Offset(0, -13),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: RichText(
-                                      text: TextSpan(
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                          color: Colors.black,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: DateFormat(
-                                                    'yyyy년 MM월 dd일 ', 'ko_KR')
-                                                .format(entry.date),
-                                          ),
-                                          TextSpan(
-                                            text:
-                                                '| ${DateFormat('EEEE', 'ko_KR').format(entry.date)}',
-                                            style: const TextStyle(
-                                              color: Color.fromARGB(
-                                                  255, 90, 90, 90),
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  PopupMenuButton<String>(
-                                    padding: const EdgeInsets.only(left: 18),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: const BorderSide(
-                                        color: Color(0xFFE9CFF4),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    color: const Color(0xFFFFF0FB),
-                                    icon: const FaIcon(
-                                      FontAwesomeIcons.ellipsis,
-                                      size: 16,
-                                      color: Color.fromARGB(255, 184, 184, 184),
-                                    ),
-                                    onSelected: (value) async {
-                                      if (value == 'edit') {
-                                        final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => WritePage(
-                                              selectedDate: entry.date,
-                                              existingEntry: entry,
-                                            ),
-                                          ),
-                                        );
-                                        if (result != null) setState(() {});
-                                      } else if (value == 'delete') {
-                                        await box.delete(key);
-                                        setState(() {});
-                                      }
-                                    },
-                                    itemBuilder: (context) => const [
-                                      PopupMenuItem(
-                                          value: 'edit',
-                                          child: Center(child: Text('✏️ 수정'))),
-                                      PopupMenuItem(
-                                          value: 'delete',
-                                          child: Center(child: Text('🗑 삭제'))),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 7),
-                              Text(
-                                isExpanded || (entry.text?.length ?? 0) <= 70
-                                    ? entry.text ?? ''
-                                    : '${entry.text!.substring(0, 70)}...',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.black87,
-                                  height: 1.4,
-                                ),
-                              ),
-                              if ((entry.text?.length ?? 0) > 70)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: TextButton.icon(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _expandedStates[index] =
-                                            !_expandedStates[index];
-                                      });
-                                    },
-                                    icon: FaIcon(
-                                      isExpanded
-                                          ? FontAwesomeIcons.chevronUp
-                                          : FontAwesomeIcons.chevronDown,
-                                      size: 12,
-                                      color: const Color.fromARGB(
-                                          255, 184, 149, 199),
-                                    ),
-                                    label: Text(
-                                      isExpanded ? '접기' : '더보기',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color:
-                                            Color.fromARGB(255, 184, 149, 199),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                return _buildDiaryCard(entry, key, index, isExpanded);
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // 일기 카드 UI
+  Widget _buildDiaryCard(
+      DiaryEntry entry, dynamic key, int index, bool isExpanded) {
+    final emotionPath = 'assets/emotions/${entry.emotion}.png';
+    final weatherPath = 'assets/weather/${entry.weather}.png';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 감정 + 날씨
+          Column(
+            children: [
+              _buildCircleImage(emotionPath, 36),
+              const SizedBox(height: 6),
+              _buildRoundedImage(weatherPath, 25),
+            ],
+          ),
+          const SizedBox(width: 12),
+          // 일기 내용 + 수정/삭제
+          Expanded(
+            child: Transform.translate(
+              offset: const Offset(0, -13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 날짜 + 요일 + 팝업
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Colors.black),
+                            children: [
+                              TextSpan(
+                                  text: DateFormat('yyyy년 MM월 dd일 ', 'ko_KR')
+                                      .format(entry.date)),
+                              TextSpan(
+                                text:
+                                    '| ${DateFormat('EEEE', 'ko_KR').format(entry.date)}',
+                                style: const TextStyle(
+                                  color: Color.fromARGB(255, 90, 90, 90),
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        padding: const EdgeInsets.only(left: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(
+                              color: Color(0xFFE9CFF4), width: 1),
+                        ),
+                        color: const Color(0xFFFFF0FB),
+                        icon: const FaIcon(FontAwesomeIcons.ellipsis,
+                            size: 16,
+                            color: Color.fromARGB(255, 184, 184, 184)),
+                        onSelected: (value) async {
+                          if (value == 'edit') {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => WritePage(
+                                  selectedDate: entry.date,
+                                  existingEntry: entry,
+                                ),
+                              ),
+                            );
+                            if (result != null) setState(() {});
+                          } else if (value == 'delete') {
+                            await Hive.box<DiaryEntry>('diaryEntries')
+                                .delete(key);
+                            setState(() {});
+                          }
+                        },
+                        itemBuilder: (context) => const [
+                          PopupMenuItem(
+                              value: 'edit',
+                              child: Center(child: Text('✏️ 수정'))),
+                          PopupMenuItem(
+                              value: 'delete',
+                              child: Center(child: Text('🗑 삭제'))),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 7),
+
+                  // 일기 내용 미리보기
+                  Text(
+                    isExpanded || (entry.text?.length ?? 0) <= 70
+                        ? entry.text ?? ''
+                        : '${entry.text!.substring(0, 70)}...',
+                    style: const TextStyle(
+                        fontSize: 13, color: Colors.black87, height: 1.4),
+                  ),
+
+                  // 더보기 버튼
+                  if ((entry.text?.length ?? 0) > 70)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _expandedStates[index] = !_expandedStates[index];
+                          });
+                        },
+                        icon: FaIcon(
+                          isExpanded
+                              ? FontAwesomeIcons.chevronUp
+                              : FontAwesomeIcons.chevronDown,
+                          size: 12,
+                          color: const Color.fromARGB(255, 184, 149, 199),
+                        ),
+                        label: Text(
+                          isExpanded ? '접기' : '더보기',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Color.fromARGB(255, 184, 149, 199)),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 감정 아이콘
+  Widget _buildCircleImage(String path, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: ClipOval(
+        child: Image.asset(path, fit: BoxFit.cover),
+      ),
+    );
+  }
+
+  // 날씨 아이콘
+  Widget _buildRoundedImage(String path, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: Image.asset(path, fit: BoxFit.cover),
       ),
     );
   }

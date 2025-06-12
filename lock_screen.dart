@@ -10,7 +10,7 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> {
   List<String> input = [];
 
-  // 암호 검증 함수
+  // 숫자 키패드 입력 처리
   void onKeyTap(String value) {
     setState(() {
       if (value == '지우기' && input.isNotEmpty) {
@@ -19,31 +19,27 @@ class _LockScreenState extends State<LockScreen> {
         input.clear();
       } else if (input.length < 4 && value != '지우기' && value != '취소') {
         input.add(value);
+
         if (input.length == 4) {
-          // 암호 검증
-          const String correctPassword = '1234'; // 예시 고정된 암호
+          const correctPassword = '1234'; // 예시 고정 암호
 
           if (input.join() == correctPassword) {
-            // 암호가 맞으면 홈 화면으로 이동
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                  builder: (context) => HomeScreen()), // 실제로 이동할 화면으로 수정
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
             );
           } else {
-            // 암호가 틀리면 경고 메시지 출력
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("암호가 틀렸습니다.")),
+              const SnackBar(content: Text("암호가 틀렸습니다.")),
             );
-            setState(() {
-              input.clear(); // 틀린 암호 입력 후 입력값 초기화
-            });
+            input.clear();
           }
         }
       }
     });
   }
 
+  // 입력된 PIN 점 UI
   Widget buildPinDots() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -63,6 +59,7 @@ class _LockScreenState extends State<LockScreen> {
     );
   }
 
+  // 키패드 UI
   Widget buildNumberPad() {
     final buttons = [
       '1',
@@ -82,13 +79,13 @@ class _LockScreenState extends State<LockScreen> {
     return GridView.builder(
       shrinkWrap: true,
       itemCount: buttons.length,
+      padding: const EdgeInsets.all(20),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         childAspectRatio: 2,
       ),
-      padding: const EdgeInsets.all(20),
       itemBuilder: (context, index) {
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -130,16 +127,16 @@ class _LockScreenState extends State<LockScreen> {
   }
 }
 
-// 예시 홈 화면 (암호가 맞을 경우 이동할 화면)
+// 암호 성공 시 이동할 홈 화면
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("홈 화면"),
-      ),
-      body: Center(
-        child: Text("암호가 맞았습니다!"),
+      appBar: AppBar(title: const Text("홈 화면")),
+      body: const Center(
+        child: Text("암호가 일치합니다"),
       ),
     );
   }

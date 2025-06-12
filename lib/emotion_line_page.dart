@@ -83,7 +83,7 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          backgroundColor: const Color(0xFFFFE0F6), // 연핑크 배경
+          backgroundColor: const Color(0xFFFFE0F6),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -193,7 +193,8 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
                           ),
                           const SizedBox(width: 75),
                           Text(
-                            DateFormat('yyyy년 M월').format(_focusedMonth),
+                            DateFormat('yyyy\uB144 M\uC6D4')
+                                .format(_focusedMonth),
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
@@ -246,7 +247,7 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
                             if (value >= 0 && value <= 4) {
                               return Padding(
                                 padding: const EdgeInsets.only(top: 6),
-                                child: Text('${value.toInt() + 1}주차',
+                                child: Text('${value.toInt() + 1}\uC8FC\uCC28',
                                     style: const TextStyle(fontSize: 12)),
                               );
                             }
@@ -355,15 +356,15 @@ class _EmotionLinePageState extends State<EmotionLinePage> {
   String _emotionLabel(int score) {
     switch (score) {
       case -2:
-        return " 화남 -2";
+        return " \uD654\uB0A8 -2";
       case -1:
-        return " 나쁨 -1";
+        return " \uB0A8\uC74C -1";
       case 0:
-        return " 슬픔  0";
+        return " \uC2AC\uD504\uBA74  0";
       case 1:
-        return " 보통 +1";
+        return " \uBCF4\uD1B5 +1";
       case 2:
-        return " 행복 +2";
+        return " \uD589\uBCF5 +2";
       default:
         return "";
     }

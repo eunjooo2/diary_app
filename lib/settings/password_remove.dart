@@ -10,12 +10,13 @@ class PasswordRemovePage extends StatefulWidget {
 
 class _PasswordRemovePageState extends State<PasswordRemovePage> {
   List<String> _pin = [];
-  String? _errorMessage;
   int _cancelCount = 0;
+  String? _errorMessage;
 
+  // 숫자 입력 처리
   void _addDigit(String digit) async {
-    _cancelCount = 0; // '숫자' 입력 시 카운트 초기화
-    if (_pin.length >= 4) return; // 숫자 4자리 수 받기
+    _cancelCount = 0;
+    if (_pin.length >= 4) return;
 
     setState(() => _pin.add(digit));
 
@@ -27,162 +28,42 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
       if (inputPin == savedPin) {
         await box.delete('pin_code');
         if (mounted) {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              backgroundColor: const Color(0xFFFFE6F0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(width: 8),
-                  Text(
-                    '암호 제거 완료',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.purple[800],
-                    ),
-                  ),
-                ],
-              ),
-              content: const Text(
-                '암호가 성공적으로\n제거되었습니다.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF444444),
-                ),
-              ),
-              actionsAlignment: MainAxisAlignment.center,
-              actions: [
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purpleAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text('확인'),
-                ),
-              ],
-            ),
-          ).then((value) {
-            Navigator.pop(context); // 설정 페이지로 이동
-          });
+          await _showDialog(
+            title: '암호 제거 완료',
+            message: '암호가 성공적으로\n제거되었습니다.',
+          );
+          Navigator.pop(context);
         }
       } else {
         setState(() => _pin.clear());
-
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              backgroundColor: const Color(0xFFFFE6F0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              title: Text(
-                '앗, 틀렸어요!',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.purple[800],
-                ),
-              ),
-              content: const Text(
-                '입력하신 암호가 맞지 않아요.\n다시 한 번 확인해볼까요?',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF444444),
-                ),
-              ),
-              actionsAlignment: MainAxisAlignment.center,
-              actions: [
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purpleAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text('확인'),
-                ),
-              ],
-            );
-          },
+        await _showDialog(
+          title: '앗, 틀렸어요!',
+          message: '입력하신 암호가 맞지 않아요.\n다시 한 번 확인해볼까요?',
         );
       }
     }
   }
 
+  // 취소 버튼 누르면 연속 횟수로 초기화
   void _resetPin() async {
     _cancelCount++;
-
     if (_cancelCount >= 6) {
       final box = await Hive.openBox('settings');
       await box.delete('pin_code');
 
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            backgroundColor: const Color(0xFFFFE6F0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(width: 8),
-                Text(
-                  '암호 초기화 완료',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Colors.purple[800],
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              '암호를 초기화했어요!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Color(0xFF444444),
-              ),
-            ),
-            actionsAlignment: MainAxisAlignment.center,
-            actions: [
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 223, 0, 215),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text('확인'),
-              ),
-            ],
-          ),
-        ).then((_) {
-          Navigator.pop(context);
-        });
+        await _showDialog(
+          title: '암호 초기화 완료',
+          message: '암호를 초기화했어요!',
+        );
+        Navigator.pop(context);
       }
     } else {
       setState(() => _pin.clear());
     }
   }
 
+  // 지우기 (1자리 삭제)
   void _deleteDigit() {
     _cancelCount = 0;
     setState(() {
@@ -190,6 +71,48 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
     });
   }
 
+  // 공통 다이얼로그
+  Future<void> _showDialog(
+      {required String title, required String message}) async {
+    return showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFFFFE6F0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 8),
+            Text(title,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.purple[800])),
+          ],
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 15, color: Color(0xFF444444)),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purpleAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+            ),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 안내 문구
   String get _guideText => '기존 암호를 입력하세요';
 
   @override
@@ -205,6 +128,8 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
               style: const TextStyle(color: Colors.black38, fontSize: 16),
             ),
             const SizedBox(height: 50),
+
+            // PIN 입력칸
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
@@ -225,6 +150,7 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
                 );
               }),
             ),
+
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
@@ -233,7 +159,10 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
+
             const Spacer(),
+
+            // 키패드
             SizedBox(
               height: 280,
               child: Container(
@@ -254,6 +183,7 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
     );
   }
 
+  // 키패드 버튼 Row 구성
   Widget _buildKeypadRow(List<String> labels) {
     final isDigit = RegExp(r'^\d$');
 
@@ -281,16 +211,14 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
                     border: Border.all(
                       color: isDigit.hasMatch(label)
                           ? const Color.fromARGB(255, 237, 247, 255)
-                          : const Color.fromARGB(0, 255, 225, 225),
+                          : Colors.transparent,
                       width: 0.2,
                     ),
                   ),
                   child: Text(
                     label,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                    ),
+                        fontSize: 18, fontWeight: FontWeight.w400),
                   ),
                 ),
               ),
