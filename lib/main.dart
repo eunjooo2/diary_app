@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'models/diary_entry.dart';
 import 'pin_code_page.dart';
 import 'diary_list_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:daily_app/settings/alarm.dart'; // 알림 함수들
 
 void main() async {
@@ -54,6 +55,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: startPage,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ko'), // 한국어 지원
+        Locale('en'), // 영어도 같이 넣어주는 게 일반적이야
+      ],
     );
   }
 }

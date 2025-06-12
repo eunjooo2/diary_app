@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:daily_app/settings/password_setting.dart';
 import 'package:daily_app/settings/password_change.dart';
+import 'package:daily_app/settings/password_remove.dart';
 import 'package:daily_app/settings/app_info.dart';
 import 'package:daily_app/settings/alarm.dart';
 
@@ -194,10 +195,46 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               icon: FontAwesomeIcons.rotateRight,
               text: '암호 변경',
-              onTap: () {
+              onTap: () async {
+                final box = await Hive.openBox('settings');
+                final savedPin = box.get('pin_code');
+
+                if (savedPin == null || savedPin.toString().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('설정된 암호가 없습니다.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const PasswordChangePage()),
+                );
+              },
+            ),
+            _buildSettingItem(
+              icon: FontAwesomeIcons.lockOpen,
+              text: '암호 제거',
+              onTap: () async {
+                final box = await Hive.openBox('settings');
+                final savedPin = box.get('pin_code');
+
+                if (savedPin == null || savedPin.toString().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('설정된 암호가 없습니다.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PasswordRemovePage()),
                 );
               },
             ),

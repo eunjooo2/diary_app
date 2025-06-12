@@ -12,6 +12,7 @@ class PinCodePage extends StatefulWidget {
 class _PinCodePageState extends State<PinCodePage> {
   final List<String> _pin = [];
   String? _savedPin;
+  int _cancelCount = 0;
 
   @override
   void initState() {
@@ -56,8 +57,69 @@ class _PinCodePageState extends State<PinCodePage> {
     }
   }
 
-  void _resetPin() {
-    setState(() => _pin.clear());
+  void _resetPin() async {
+    _cancelCount++;
+
+    if (_cancelCount >= 6) {
+      final box = await Hive.openBox('settings');
+      await box.delete('pin_code');
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: const Color(0xFFFFE6F0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                '암호 초기화 완료',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.purple[800],
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            '암호를 초기화했어요!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              color: Color(0xFF444444),
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // 팝업 닫기
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DiaryListPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purpleAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text('확인'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      setState(() => _pin.clear());
+    }
   }
 
   @override

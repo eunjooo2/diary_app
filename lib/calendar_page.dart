@@ -20,10 +20,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
   final Map<String, String> emotionImagePaths = {
     'happy': 'assets/emotions/happy.png',
-    'angry': 'assets/emotions/angry.png',
-    'bad': 'assets/emotions/bad.png',
     'neutral': 'assets/emotions/neutral.png',
     'sad': 'assets/emotions/sad.png',
+    'angry': 'assets/emotions/angry.png',
+    'bad': 'assets/emotions/bad.png',
   };
 
   final Map<String, String> weatherImagePaths = {
@@ -374,9 +374,30 @@ class _CalendarPageState extends State<CalendarPage> {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: Text(
-                                selectedRecord.text ?? '작성된 일기 없음',
-                                style: const TextStyle(fontSize: 14),
+                              child: RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black87),
+                                  children: [
+                                    TextSpan(
+                                      text: (selectedRecord.text?.length ?? 0) >
+                                              50
+                                          ? selectedRecord.text!
+                                              .substring(0, 50)
+                                          : (selectedRecord.text ??
+                                              '작성된 일기 없음'),
+                                    ),
+                                    if ((selectedRecord.text?.length ?? 0) > 90)
+                                      const TextSpan(
+                                        text: ' ...(생략)',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 146, 146, 146),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

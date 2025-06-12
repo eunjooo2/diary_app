@@ -15,20 +15,20 @@ class EmotionBarPage extends StatefulWidget {
 class _EmotionStatsPageState extends State<EmotionBarPage> {
   DateTime _focusedMonth = DateTime.now();
 
-  final List<String> emotionKeys = ['angry', 'bad', 'sad', 'happy', 'neutral'];
+  final List<String> emotionKeys = ['angry', 'bad', 'sad', 'neutral', 'happy'];
 
   final Map<String, String> emotionImagePaths = {
-    'sad': 'assets/emotions/sad.png',
-    'neutral': 'assets/emotions/neutral.png',
     'happy': 'assets/emotions/happy.png',
+    'neutral': 'assets/emotions/neutral.png',
+    'sad': 'assets/emotions/sad.png',
     'bad': 'assets/emotions/bad.png',
     'angry': 'assets/emotions/angry.png',
   };
 
   final Map<String, Color> emotionColors = {
-    'sad': const Color.fromARGB(255, 255, 247, 13),
-    'neutral': const Color.fromARGB(255, 104, 217, 255),
     'happy': const Color.fromARGB(255, 0, 255, 128),
+    'neutral': const Color.fromARGB(255, 104, 217, 255),
+    'sad': const Color.fromARGB(255, 255, 247, 13),
     'bad': const Color.fromARGB(255, 255, 145, 48),
     'angry': const Color.fromARGB(255, 255, 8, 8),
   };
@@ -51,22 +51,29 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
     final total = counts.values.fold(0, (a, b) => a + b);
     if (total == 0) return '이번 달에는 작성된 감정 기록이 없어요.';
 
-    final negativeScore = (counts['bad'] ?? 0) + (counts['angry'] ?? 0);
+    final negativeScore =
+        (counts['bad'] ?? 0) + (counts['angry'] ?? 0) + (counts['sad'] ?? 0);
     final positiveScore = (counts['happy'] ?? 0) + (counts['neutral'] ?? 0);
+    final gap = (positiveScore - negativeScore).abs();
 
-    if (negativeScore > total * 0.5) {
+    if // 흐린 햇님: 부정적 감정이 60프로 이상
+        (negativeScore > total * 0.6) {
       return '이번 달은 마음이 조금 무거웠나 봐요.\n유독 감정에 구름이 많았던 달이었어요.\n하지만 햇살도 틈틈이 곁에 있었을 거예요.\n그 작은 빛들을 기억해봐요.';
-    } else if (positiveScore > total * 0.5) {
+    } else if // 햇님: 긍정적 감정이 60프로 이상
+        (positiveScore > total * 0.6) {
       return '이 달은 감정의 파도가 부드럽게 이어졌어요. 마음을 눌렀던 순간도 있었지만, \n그만큼 웃는 날도 있었던 한 달이네요. \n정말 수고했어요 :)';
-    } else {
-      return '감정은 다양하게 흘러가요. 기쁨도, 슬픔도, 때론 복잡한 마음까지 모두 당신의 한 부분이에요. 어떤 하루든 무의미한 날은 없었어요.이번 달도 잘 지나왔어요. 정말 수고했어요 :)';
+    } else if // 무지개: 감정이 고르게 분포되어 있을 떄
+        (gap <= 3) {
+      return '감정은 다양하게 흘러가요. 기쁨도, 슬픔도, 때론 복잡한 마음까지 모두 당신의 한 부분이에요. 어떤 하루든 무의미한 날은 없었어요. 이번 달도 잘 지나왔어요. 정말 수고했어요 :)';
     }
+    return '감정을 분석하는 데 오류가 발생했어요.';
   }
 
   String _getSolutionImage(Map<String, int> counts) {
     final total = counts.values.fold(0, (a, b) => a + b);
     final positive = (counts['happy'] ?? 0) + (counts['neutral'] ?? 0);
-    final negative = (counts['bad'] ?? 0) + (counts['angry'] ?? 0);
+    final negative =
+        (counts['bad'] ?? 0) + (counts['angry'] ?? 0) + (counts['sad'] ?? 0);
 
     if (total == 0) return 'assets/solution/solution_sunny.png';
     if (negative > total * 0.5) return 'assets/solution/solution_cloud.png';
@@ -74,6 +81,7 @@ class _EmotionStatsPageState extends State<EmotionBarPage> {
     return 'assets/solution/solution_rainbow.png'; // 다양한 감정
   }
 
+// 페이지 설명 팝업
   void _showHelpDialog() {
     showDialog(
       context: context,
