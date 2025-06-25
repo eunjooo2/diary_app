@@ -29,8 +29,8 @@ Future<void> initializeNotifications() async {
 Future<void> scheduleDailyAlarm(int hour, int minute) async {
   await flutterLocalNotificationsPlugin.zonedSchedule(
     0, // 알림 ID (중복 예약 방지용 고정값)
-    '오늘 하루 감정, 기록했나요?', // 제목
-    '하루 감정을 짧게라도 남겨보세요.', // 내용
+    '오늘 하루 감정, 기록했나요?', 
+    '하루 감정을 짧게라도 남겨보세요.', 
     _nextInstanceOfTime(hour, minute), // 알림 예정 시각
     const NotificationDetails(
       android: AndroidNotificationDetails(
