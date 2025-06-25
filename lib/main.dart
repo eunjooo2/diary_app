@@ -38,7 +38,7 @@ void main() async {
     }
   }
 
-  // 암호 설정 여부에 따라 시작 페이지 결정
+  // 암호 설정 여부에 따라 시작 페이지 결정  // 암호 설정 시: 앱실행 시 첫 페이지 -> 암호 페이지
   final savedPin = settingsBox.get('pin_code');
 
   runApp(MyApp(
@@ -61,8 +61,8 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('ko'), // 한국어 지원
-        Locale('en'), // 영어도 같이 넣어주는 게 일반적이야
+        Locale('ko'), 
+        Locale('en'), 
       ],
     );
   }
