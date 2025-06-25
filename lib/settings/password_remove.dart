@@ -1,3 +1,4 @@
+/// 암호 제거 페이지
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -44,7 +45,7 @@ class _PasswordRemovePageState extends State<PasswordRemovePage> {
     }
   }
 
-  // 취소 버튼 누르면 연속 횟수로 초기화
+  // 취소 버튼 누르면 연속 횟수로 초기화 (숨겨진 기능)
   void _resetPin() async {
     _cancelCount++;
     if (_cancelCount >= 6) {
