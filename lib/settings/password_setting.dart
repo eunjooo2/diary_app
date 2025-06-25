@@ -1,4 +1,4 @@
-/// 암호 설정 페이지
+// 암호 설정 페이지
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -10,11 +10,10 @@ class PasswordSettingPage extends StatefulWidget {
 }
 
 class _PasswordSettingPageState extends State<PasswordSettingPage> {
-  List<String> _pin = [];
+  final List<String> _pin = [];
   String? _tempPassword;
   bool _isConfirming = false;
 
-  // 숫자 입력 처리
   void _addDigit(String digit) {
     if (_pin.length >= 4) return;
     setState(() => _pin.add(digit));
@@ -41,10 +40,54 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
     }
   }
 
-  // 초기화
   void _resetPin() => setState(() => _pin.clear());
+
   void _deleteDigit() => setState(() {
-        if (_pin.isNotEmpty리 입력 박스
+        if (_pin.isNotEmpty) _pin.removeLast();
+      });
+
+  void _savePassword(String password) async {
+    final box = await Hive.openBox('settings');
+    await box.put('password', password);
+    _showDialog(title: '암호 설정 완료!', message: '암호가 성공적으로 저장되었어요.');
+    _resetPin();
+    setState(() {
+      _isConfirming = false;
+      _tempPassword = null;
+    });
+  }
+
+  void _showDialog({required String title, required String message}) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('확인'),
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFFDEB),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 50),
+            Text(
+              _isConfirming ? '한 번 더 입력해주세요' : '암호 4자리를 입력해주세요',
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 40),
+
+            // 입력 박스
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
@@ -89,7 +132,6 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
     );
   }
 
-  // 키패드 줄 생성 함수
   Widget _buildKeypadRow(List<String> labels) {
     final isDigit = RegExp(r'^\d$');
 

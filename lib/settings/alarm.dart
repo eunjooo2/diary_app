@@ -3,11 +3,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-/// 알림 플러그인 인스턴스 (전역에서 사용)
+// 알림 플러그인 인스턴스 (전역에서 사용)
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-/// 알림 시스템 초기화
+// 알림 시스템 초기화
 Future<void> initializeNotifications() async {
   // 타임존 데이터 초기화
   tz.initializeTimeZones();
@@ -25,12 +25,12 @@ Future<void> initializeNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
-///  매일 정해진 시간에 알림 예약
+// 매일 정해진 시간에 알림 예약
 Future<void> scheduleDailyAlarm(int hour, int minute) async {
   await flutterLocalNotificationsPlugin.zonedSchedule(
     0, // 알림 ID (중복 예약 방지용 고정값)
-    '오늘 하루 감정, 기록했나요?', 
-    '하루 감정을 짧게라도 남겨보세요.', 
+    '오늘 하루 감정, 기록했나요?',
+    '하루 감정을 짧게라도 남겨보세요.',
     _nextInstanceOfTime(hour, minute), // 알림 예정 시각
     const NotificationDetails(
       android: AndroidNotificationDetails(
@@ -47,12 +47,12 @@ Future<void> scheduleDailyAlarm(int hour, int minute) async {
   );
 }
 
-/// 예약된 알림 취소
+// 예약된 알림 취소
 Future<void> cancelAlarm() async {
   await flutterLocalNotificationsPlugin.cancel(0); // ID로 지정한 알림 취소
 }
 
-/// 다음 알림 시간 계산 함수
+// 다음 알림 시간 계산 함수
 tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
   final now = tz.TZDateTime.now(tz.local);
   final scheduled =

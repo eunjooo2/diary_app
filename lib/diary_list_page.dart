@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-
 import '../models/diary_entry.dart';
 import 'calendar_page.dart';
 import 'settings/settings_page.dart';
@@ -104,7 +103,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TextField(
               controller: _searchController,
-              onChanged: (value) => setState(() => _searchKeyword = value), // 특정 키워드 입력 시 실시간으로 반영해 그 키워드가 포함된 일기만 출력
+              onChanged: (value) => setState(() => _searchKeyword =
+                  value), // 특정 키워드 입력 시 실시간으로 반영해 그 키워드가 포함된 일기만 출력
               decoration: InputDecoration(
                 hintText: '검색어를 입력하세요.',
                 hintStyle: TextStyle(color: Colors.grey[500]),
@@ -389,7 +389,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDEB),
       body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar( // 하단바
+      bottomNavigationBar: BottomNavigationBar(
+        // 하단바
         backgroundColor: const Color.fromARGB(255, 255, 251, 219),
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

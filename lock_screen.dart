@@ -1,3 +1,7 @@
+/// 앱 실행 시 암호를 입력받는 잠금화면(LockScreen)
+// ( 암호를 입력받고, 맞으면 홈 화면(HomeScreen) 으로 넘어가고,
+// 틀리면 에러 메시지를 보여주는 PIN 잠금 화면 )
+
 import 'package:flutter/material.dart';
 
 class LockScreen extends StatefulWidget {
