@@ -1,8 +1,8 @@
+/// 앱 정보 페이지
+/// 앱 버전, 소개 문구, 개발자 연락처 등을 표시하는 화면
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// 앱 정보 페이지
-/// 앱 버전, 소개 문구, 개발자 연락처 등을 표시하는 화면
 class AppInfoPage extends StatelessWidget {
   const AppInfoPage({super.key});
 
