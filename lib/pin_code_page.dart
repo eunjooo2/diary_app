@@ -148,7 +148,7 @@ class _PinCodePageState extends State<PinCodePage> {
             ),
             const SizedBox(height: 50),
 
-            // ● ● ● ● 암호 표시
+            // 암호 4자리 표시
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
