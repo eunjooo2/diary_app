@@ -1,3 +1,4 @@
+///감정일기 모델의 Hive 변환 코드
 part of 'diary_entry.dart';
 
 class DiaryEntryAdapter extends TypeAdapter<DiaryEntry> {
