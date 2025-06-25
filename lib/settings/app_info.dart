@@ -9,7 +9,7 @@ class AppInfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDEB), // 전체 배경 색상상
+      backgroundColor: const Color(0xFFFFFDEB), // 전체 배경 색상
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFFDEB), // AppBar 배경색
         elevation: 0, // 그림자 제거
