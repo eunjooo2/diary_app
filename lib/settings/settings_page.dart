@@ -1,3 +1,4 @@
+/// 설정페이지
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
@@ -305,7 +306,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  /// 일반 설정 아이템 빌더 (아이콘 + 텍스트)
+  /// 일반적인 리스트 항목
   Widget _buildSettingItem({
     required IconData icon,
     required String text,
@@ -318,7 +319,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  /// Switch 설정 아이템 빌더
+  /// 스위치가 달린 리스트 항목 (켜기/끄기 가능)
   Widget _buildSwitchItem({
     required IconData icon,
     required String text,
