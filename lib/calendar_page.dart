@@ -83,7 +83,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  // 날짜에서 시간 제거
+  // 날짜(년,월,일)
   DateTime _stripTime(DateTime date) =>
       DateTime(date.year, date.month, date.day);
 
