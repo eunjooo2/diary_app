@@ -1,3 +1,4 @@
+/// 암호 변경 페이지
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -169,7 +170,7 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
             ),
             const SizedBox(height: 50),
 
-            // ●●●● 입력 박스
+            // 암호 코드 4자리 입력 박스
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
