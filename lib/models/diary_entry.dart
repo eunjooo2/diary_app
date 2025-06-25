@@ -1,4 +1,5 @@
-///감정일기 하나를 저장하는 데이터 설계 파일
+///감정일기 데이터 모델 정의 파일
+
 import 'package:hive/hive.dart';
 
 part 'diary_entry.g.dart';
